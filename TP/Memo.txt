@@ -1,0 +1,23 @@
+1. Find the incidnet and transmitted THz field spectra by Fourier transform
+- use MATLAB Fourier transform
+
+txt file format: time reference sample
+time interval: 33.3fs -> 30 THz
+
+* sample has 2nd, 3rd signal because of internal refelction
+-> make absortion peak to spectra
+-> delete extra signal -> what is standard?
+
+assume:
+- plane wave
+- Air's index = 1 (n0)
+- 737.5um
+
+
+2. Find the transmission coefficient
+- By definition, just divde incident and transmitted
+- some value will over 1 -> meaningless value (noise)
+
+3. Find the complex refractive index
+- use wave-vector
+- In most semiconductors are lossy medium -> think absorption coefficient

@@ -34,7 +34,7 @@ R_phase=phase(R);
 S_amp=abs(S);
 S_phase=phase(S);
 
-n_ini=3.4;
+n_ini=3.4+1i;
 n(1:length(f))=n_ini;
 Z(1:length(f))=1;
 

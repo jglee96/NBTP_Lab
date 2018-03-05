@@ -8,7 +8,7 @@ time interval: 33.3fs -> 30 THz
 -> make absortion peak to spectra
 -> delete extra signal -> what is standard?
 
-assume:
+condition:
 - plane wave
 - Air's index = 1 (n0)
 - 737.5um
@@ -17,6 +17,8 @@ assume:
 2. Find the transmission coefficient
 - By definition, just divde incident and transmitted
 - some value will over 1 -> meaningless value (noise)
+
+- A complex coefficient means that a phase shift is introduced at the interface upon reflection (or transmission). (Cheng, p.399)
 
 3. Find the complex refractive index
 - use wave-vector

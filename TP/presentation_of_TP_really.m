@@ -30,9 +30,9 @@ f(L+1)=[];
 R=fft(ref);
 S=fft(sam);
 R_amp=abs(R);
-R_phase=phase(R);
+R_phase=angle(R);
 S_amp=abs(S);
-S_phase=phase(S);
+S_phase=angle(S);
 
 n_ini=3.4+1i;
 n(1:length(f))=n_ini;

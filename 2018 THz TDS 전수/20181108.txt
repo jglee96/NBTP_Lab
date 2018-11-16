@@ -1,0 +1,18 @@
+﻿20181108 그동안 밀린 내용
+1. 딜레이 라인
+- beam과 딜레이 라인이 움직이는 선이 평행해야 한다.
+- 딜레이 라인 스테이지 위에 aperture를 앞쪽에 놓고 align한다.
+- 무빙 스테이지에 있는 aperture 뒤에 power meter를 놓고 maximum point가 일치하도록 align한다.
+
+2. lens
+- lens의 틸팅은 움직여도 beam align에 큰 영향이 되지 않는다.
+- beam을 퍼뜨리는 렌즈 다음에 십자를 놓아서 크기가 큰 beam의 align 기준을 만든다.
+- 
+
+3. parabolic mirror
+
+4. detector
+
+5. VISIO
+- 처음에 visio로 setting을 구상할 떄 정확히 만들어놔야 align할 때 그대로 배치하면 되므로 편하다.
+- visio를 그릴 때 component들을 setting하는 사람의 자리와 손의 위치를 생각하여 그리면 직접 setting할 때 편하다.

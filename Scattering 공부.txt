@@ -1,0 +1,8 @@
+Scattering = excitation + reradiation
+Ewald-Oseen extinction theorem
+Linearly birefringment: different refractive indices depending on the state of liner polarization
+Linearly dichroic: the imaginary parts of the refractive indices are different
+Circularly birefringent & circularly dichroic: complex refractive index depends on handedness
+Stokes parameters
+
+

@@ -4,5 +4,7 @@ Linearly birefringment: different refractive indices depending on the state of l
 Linearly dichroic: the imaginary parts of the refractive indices are different
 Circularly birefringent & circularly dichroic: complex refractive index depends on handedness
 Stokes parameters
+extinction depends pn the chemical composition of the particles, their size, shape, orientation, the surrounding medium, the number of particles, and the polarization state and frequency of the incident beam.
+
 
 

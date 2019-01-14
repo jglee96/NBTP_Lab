@@ -6,3 +6,6 @@ Circularly birefringent & circularly dichroic: complex refractive index depends 
 Stokes parameters
 extinction depends pn the chemical composition of the particles, their size, shape, orientation, the surrounding medium, the number of particles, and the polarization state and frequency of the incident beam.
 natural frequencies of the sphere
+at the wavelength of magnetic resonance, the excited magnetic dipole mode of a dielectric nanoparticle may become comparable to, or even stronger than, the electric dipole response.
+MBB: Metamsurface Building Block
+All dielectric falt-lenses: high efficiency, high NA(numerical apertures), multifunctional lenses

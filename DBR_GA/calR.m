@@ -1,4 +1,4 @@
-function [R, T] = RandT(DBR_eps,DBR_length,lambda,L)
+function R = calR(DBR_eps,DBR_length,lambda,L)
 % DBR Calcultor
 
 epst = DBR_eps;
@@ -30,5 +30,4 @@ for nl = 1:L+1
         end
     end
 end
-T(1,:) = abs((1./B_tot(1,1,:))).^2;
 R(1,:) = abs((B_tot(2,1,:)./B_tot(1,1,:))).^2;

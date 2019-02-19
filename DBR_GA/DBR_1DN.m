@@ -38,27 +38,38 @@ for i=1:N_struct
     end
 end
 
-% DBR Calcultor
+% Initial DBR Calcultor
 R = zeros(N_struct,length(lambda));
-T = zeros(N_struct,length(lambda));
 Q = zeros(1,N_struct);
 for i=1:N_struct
-    [R(i,:), T(i,:)] = RandT(DBR_eps,DBR_length(i,:),lambda,L);
+    R(i,:)= calR(DBR_eps,DBR_length(i,:),lambda,L);
     Q(i) = calQ(R(i,:),lambda,tarlam);
 end
 delindex = find(~Q);
 DBR_length(delindex,:) = [];
 R(delindex,:) = [];
-T(delindex,:) = [];
 Q(delindex) = [];
-Plot_RandT(R,T,lambda);
-maxParentsQ = max(Q);
-
+Plot_R(R,lambda);
 
 % Crossover
-Ng = 20;
+Ng = 5;
 for n=1:Ng
+    
     N_struct = length(DBR_length(:,1));
+    R = zeros(N_struct,length(lambda));
+    Q = zeros(1,N_struct);
+    for i=1:N_struct
+        R(i,:)= calR(DBR_eps,DBR_length(i,:),lambda,L);
+        Q(i) = calQ(R(i,:),lambda,tarlam);
+    end
+    delindex = find(~Q);
+    DBR_length(delindex,:) = [];
+    Q(delindex) = [];
+    maxParentsQ = max(Q);
+    minParentsQ = min(Q);
+    minParentsQ_index = find(Q==minParentsQ);
+    N_struct = length(DBR_length(:,1));
+    
     newDBR_length = zeros(2*nchoosek(N_struct,2),L);
     p = 1;
     for i=1:N_struct-1
@@ -95,19 +106,18 @@ for n=1:Ng
     end
     
     parfor i=1:newN_struct
-        [newR, newT] = RandT(DBR_eps,newDBR_length(i,:),lambda,L);
+        newR = calR(DBR_eps,newDBR_length(i,:),lambda,L);
         newQ = calQ(newR,lambda,tarlam);
-        
         if newQ <= maxParentsQ
             newDBR_length(i,:) = 0;
         end
     end
     
     delindex = find(~newDBR_length(:,1));
-    newDBR_length(delindex',:) = [];    
+    newDBR_length(delindex',:) = [];
     
     if length(newDBR_length(:,1)) == 1
-        DBR_length = [DBR_length; newDBR_length];
+        DBR_length(minParentsQ_index,:) = newDBR_length;
     elseif length(newDBR_length(:,1)) > 1
         DBR_length = newDBR_length;
     end
@@ -115,15 +125,13 @@ end
 
 N_struct = length(DBR_length(:,1));
 R = zeros(N_struct,length(lambda));
-T = zeros(N_struct,length(lambda));
 Q = zeros(1,N_struct);
 parfor i=1:N_struct
-    [R(i,:), T(i,:)] = RandT(DBR_eps,DBR_length(i,:),lambda,L);
+    R(i,:)= calR(DBR_eps,DBR_length(i,:),lambda,L);
     Q(i) = calQ(R(i,:),lambda,tarlam);
 end
 delindex = find(~Q);
 DBR_length(delindex,:) = [];
 R(delindex,:) = [];
-T(delindex,:) = [];
 Q(delindex) = [];
-Plot_RandT(R,T,lambda);
+Plot_R(R,lambda);

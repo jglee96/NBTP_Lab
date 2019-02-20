@@ -43,13 +43,15 @@ R = zeros(N_struct,length(lambda));
 Q = zeros(1,N_struct);
 for i=1:N_struct
     R(i,:)= calR(DBR_eps,DBR_length(i,:),lambda,L);
-    Q(i) = calQ(R(i,:),lambda,tarlam);
+   % Q(i) = calQ(R(i,:),lambda,tarlam);
 end
 delindex = find(~Q);
 DBR_length(delindex,:) = [];
 R(delindex,:) = [];
-Q(delindex) = [];
+%Q(delindex) = [];
 Plot_R(R,lambda);
+
+tarlam_index = find(lambda==tarlam);
 
 % Crossover
 Ng = 5;
@@ -108,7 +110,7 @@ for n=1:Ng
     parfor i=1:newN_struct
         newR = calR(DBR_eps,newDBR_length(i,:),lambda,L);
         newQ = calQ(newR,lambda,tarlam);
-        if newQ <= maxParentsQ
+        if newQ <= maxParentsQ || newR(tarlam_index) < 0.9
             newDBR_length(i,:) = 0;
         end
     end

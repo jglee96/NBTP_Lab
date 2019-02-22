@@ -1,4 +1,4 @@
-function R = calRgpu(Layer,lambda,Ngrid,dx,epsi,eps0)
+function R = calRgpu(Layer,lambda,Nstruct,Ngrid,dx,epsi,eps0)
 
 warning off parallel:gpu:device:DeviceLibsNeedsRecompiling
 try
@@ -11,15 +11,16 @@ catch ME
 end
 
 % DBR Calcultor
-epst = gpuArray(zeros(1,Ngrid));
-for i=1:Ngrid
-    if Layer(i)
-        epst(i) = epsi;
-    else
-        epst(i) = eps0;
-    end
-end
+one_element = epsi*double((Layer == 1));
+zero_element = eps0*double((Layer == 0));
+epst = one_element + zero_element;
+epst = gpuArray(epst);
+
 B_tot = gpuArray(zeros(2,2,length(lambda)));
+Pn = [epst, ones(Nstruct,1,'gpuArray')];
+Pn1 = [ones(Nstruct,1,'gpuArray'), epst];
+P = sqrt(Pn./Pn1);
+
 
 % calculate transfer matrix (B_tot)
 for nl = 1:Ngrid+1

@@ -22,13 +22,8 @@ Layer(:,[1,end]) = 1;
 Layer(:,2:end-1) = round(rand(Nstruct,Ngrid-2));
 
 % Initial DBR Calcultor
-R = zeros(Nstruct,length(lambda));
-Q = zeros(1,Nstruct);
-MSL = zeros(1,Nstruct);
-parfor i=1:Nstruct
-    R(i,:)= calR(Layer(i,:),lambda,Ngrid,dx,epsi,eps0);
-    [Q(i), MSL(i)]= calQ(R(i,:),lambda,tarlam_index);
-end
+R = calRgpu(Layer,lambda,Nstruct,Ngrid,dx,epsi,eps0);
+[Q, MSL]= calQ(R,lambda,tarlam_index);
 [Layer,R,Q,MSL] = DelDBR(Layer,R,Q,MSL);
 Nstruct = length(Layer(:,1));
 Plot_R(R,lambda);
@@ -55,7 +50,7 @@ for i=1:Ngrid
     end
 end
 
-RF = calR(LayerF,lambda,Ngrid,dx,epsi,eps0);
+RF = calRgpu(LayerF,lambda,Ngrid,dx,epsi,eps0);
 [QF, MSLF] = calQ(RF, lambda, tarlam_index);
 Plot_R(RF,lambda);
 saveas(gcf,['Result Layers(' num2str(Nstruct) ')'],'jpg');

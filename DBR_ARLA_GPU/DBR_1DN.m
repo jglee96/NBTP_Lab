@@ -9,6 +9,7 @@ epsi = 12.25; % layer permitivitty
 eps0 = 1; % air permitivitty
 wQ = 100; % weight of Q-factor
 wMSL = 1; % weight of Maximum Side Level
+d = gpuDevice;
 
 % Setup target lambda region
 tarlam = 800; % target wavelength
@@ -50,8 +51,9 @@ for i=1:Ngrid
     end
 end
 
-RF = calRgpu(LayerF,lambda,Ngrid,dx,epsi,eps0);
+RF = calRgpu(LayerF,lambda,Nstruct,Ngrid,dx,epsi,eps0);
 [QF, MSLF] = calQ(RF, lambda, tarlam_index);
 Plot_R(RF,lambda);
 saveas(gcf,['Result Layers(' num2str(Nstruct) ')'],'jpg');
 saveas(gcf,['Result Layers(' num2str(Nstruct) ')'],'emf');
+gpuDevice([]);

@@ -2,9 +2,9 @@
 clc; clear; close all;
 
 % Setup program constants
-Ngrid = 100; % Number of permitivitty layers gird
+Ngrid = 50; % Number of permitivitty layers gird
 dx = 10;
-Nstruct = 10000; % Number of DBR structures
+Nstruct = 500; % Number of DBR structures
 epsi = 12.25; % layer permitivitty
 eps0 = 1; % air permitivitty
 wQ = 100; % weight of Q-factor
@@ -31,9 +31,6 @@ parfor i=1:Nstruct
 end
 [Layer,R,Q,MSL] = DelDBR(Layer,R,Q,MSL);
 Nstruct = length(Layer(:,1));
-Plot_R(R,lambda);
-saveas(gcf,['Initial Random Layers(' num2str(Nstruct) ')'],'jpg');
-saveas(gcf,['Initial Random Layers(' num2str(Nstruct) ')'],'emf');
 
 % Learning Phase
 E = zeros(1,Ngrid);

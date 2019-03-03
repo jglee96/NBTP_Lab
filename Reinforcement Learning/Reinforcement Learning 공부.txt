@@ -1,0 +1,39 @@
+Q factor와 MSL을 따로 생각 -> weight를 주지 않고 reward 벡터라고 생각
+
+MDP (Markov Decision Process)
+- state, aciton, state transition probability matrix, reward, discount factor
+- state: agent가 인식하는 자신의 상태
+- action: agent가 지시하`는 행동
+- state transition probability matrix: s의 상태에서 action을 취했을 떄 s'의 상태로 도착하는 확률
+- reweard: environment가 agent에게 알려줌.
+- discount facotr: reward를 단순히 더하면 발산하기 때문에, 시간에 따라서 reward의 가치를 다르게 함
+2019-03-03-04-36-39.png
+- Policy: 어떤 state에서 어떤 action을 할지 결정하는 것 -> 강화학습의 목적은 optimal policy를 찾는 것
+
+Value Function
+- return: the total discounted reard from time-step t
+- state value function: state s에서 return의 expectation -> s 상태의 가치를
+- policy에 대한 state-value function
+
+Action-value function
+- state-value function은 다음 state에 대한 정보를 다 알아야하고 그 state로 가려면 어떻게 해야하는지도 알아야한다.
+- 어떤 state s에서 action a를 취할 경우의 받을 return에 대한 기대값 = Q-value  -> q-learning
+
+Bellman Expectation Equation
+- 다음 state와 현재 state의 value function 사이의 관계를 식으로 나타낸 것
+2019-03-03-20-01-06.png
+- 실제 강화학습으로 무엇인가를 학습시킬 떄 reward와 state transition probability는 미리 알 수가 없다. -> 경험을 통해 알아가는 것
+2019-03-03-20-29-27.png
+- reward function과 state transition probability를 모르고 학습하는 강화학습에서는 Bellman equation으로는 구할 수 가 없다.
+
+Bellman Optimally Equation
+- optimal state-value function: 현재 state에서 policy에 따라서 앞으로 받을 reward들이 달라지는데 그 중에서 앞으로 가장 많은 reward를 받을 policy를 따랐을 때의 value function
+- optimal action-value function: 현재 (s,a)에서 얻을 수 있는 최대의 value function
+
+Dynamic Programming
+- Planning: environment의 model을 알고서 문제를 푸는 것
+- Learning: environment의 model을 모르지만 상호작용을 통해서 문제를 푸는 것
+- (1) Prediction (2) Control
+
+Prediction & Control
+- 현재 optimal하지 않는 어떤 policy에 대해서 value function을 구하고(prediction) 현재의 value function을 토대로 더 나은 policy를 구하고 이와 같은 과정을 반복하여 optimal policy를 구하는 것

@@ -25,16 +25,11 @@ parfor l=1:length(lambda)
     B22(:,l) = arrayfun(@(p,kx,h) (1+p).*exp(1i.*kx.*h),P,kx(l,:),h);
 end
 
-B = cell(Ngrid+1,length(lambda));
-parfor l=1:length(lambda)
-    B(:,l) = arrayfun(@(b11,b12,b21,b22) (1/2)*[b11 b12;b21 b22],B11(:,l),B12(:,l),B21(:,l),B22(:,l),'UniformOutput',false);
-end
-
 R = zeros(1,length(lambda),'single');
 for l=1:length(lambda)
     Btot = eye(2);
     for j=1:Ngrid+1
-        Btot = Btot*cell2mat(B(j,l));
+        Btot = Btot*(1/2)*[B11(j,l),B12(j,l);B21(j,l),B22(j,l)];
     end
     R(l) = abs(Btot(2,1)/Btot(1,1))^2;
 end

@@ -1,7 +1,5 @@
 function [Q,MSL] = rewardFunc(R,lambda,tarlam_index)
-tarint = R(tarlam_index);
 j = tarlam_index;
-
 try
     while 1
         if R(j) <= 0.5*tarint
@@ -21,13 +19,13 @@ try
         end
     end
     if tarlo == tarhi
-        Q = 0;
+        Q = -1e5;
         MSL = 1;
     else
         Q = lambda(tarlam_index)/(1/lambda(tarlo)-1/lambda(tarhi));
-        MSL = mean(R([1:tarlo, tarhi:end]));
+        MSL = mean(R(1,[1:tarlo, tarhi:end]));
     end
 catch
-    Q = 0;
+    Q = -1e5;
     MSL = 1;
 end

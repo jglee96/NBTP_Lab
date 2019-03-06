@@ -4,17 +4,18 @@ clc; clear; close all;
 %% LEARNING SETTINGS
 learnRate = 0.9; % How is new value estimate weighted against the old (0-1). 1 means all new and is ok for no noise situations.
 discount = 0.9; % When assessing the value of a state & action, how important is the value of the future states?
-maxEpi = 10; % Each episode is starting with air layers
-rQ = 0.0001;
-rMSL = 1;
+maxEpi = 100; % Each episode is starting with air layers
+rQ = 1e0; % Q-factor scaling factor for reward
+rMSL = 1; % MSL scaling factor for reward
 
 %% DBR SETTINGS
 % DBR
 Ngrid = 200; % Number of grid. It is same with the actions will be taken in episode
-dx = 10; % distance unit
+dx = 25; % distance unit
 eps0 = 1; % air permittivity
 epsi = 12.25; % siliocn permittivity
-Layer = zeros(1,Ngrid);
+Layer = zeros(1,Ngrid); % state
+action = [0 1];
 
 % wavelength
 minlam = 25;
@@ -22,7 +23,7 @@ maxlam = 600;
 dlam = 25;
 lambda = minlam:dlam:maxlam;
 tarlam = 300;
-tarlam_index = find(lambda == tarlam);
+tarlam_idx = find(lambda == tarlam);
 
 %% Functions
 % function R = calR(Layer,lambda,Ngrid,dx,epsi,eps0)
@@ -35,33 +36,45 @@ tarlam_index = find(lambda == tarlam);
 Q = zeros(Ngrid,2);
 
 for episodes = 1:maxEpi
-    for ng = 1:Ngrid
+    for state_idx = 1:Ngrid
         % select an action value i.e. 1 or 0
         % which has the maximum value of Q in it
         % if more than one actions has same value than select randomly from
         % them
-        [val,index] = max(Q(ng,:));
-        [xx,yy] = find(Q(ng,:) == val);
+        [val,index] = max(Q(state_idx,:));
+        [xx,yy] = find(Q(state_idx,:) == val);
         if size(yy,2) > 1
-            index = 1+round(rand*(size(yy,1)-1));
-            action = yy(1,index);
+            index = 1+round(rand);
+            action_idx = yy(1,index);
         else
-            action = index;
+            action_idx = index;
         end
         
         % action 1 = 0 (air), action 2 = 1 (dielectric)
-        Layer(ng) = action - 1; % permitivitty will apply on calR function
+        Layer(state_idx) = action(action_idx); % permitivitty will apply on calR function
         
         % calculate reward
         R = calR(Layer,lambda,Ngrid,dx,epsi,eps0);
-        [Qfac,MSL] = rewardFunc(R,lambda,tarlam_index);
-        tar_int = R(tarlam_index);
-        reward = (rQ*Qfac)/(rMSL*MSL)+100*tar_int;
-        % update information in Q for later use
-        Q(ng,action) = Q(ng,action) + learnRate*(reward+discount*max(Q(ng,:))-Q(ng,action));
+        [Qfac,MSL] = rewardFunc(R,lambda,tarlam_idx);
+        tar_int = R(tarlam_idx);
+        reward = (rQ*Qfac)/(rMSL*MSL);
+        disp(['State: ',num2str(state_idx),'; Qfac: ',num2str(Qfac),'; MSL: ',num2str(MSL),'; reward: ',num2str(reward)]);
+        if state_idx ~= Ngrid
+            % update information in Q for later use
+            Q(state_idx,action_idx) = Q(state_idx,action_idx) + learnRate*(reward+discount*max(Q(state_idx+1,:))-Q(state_idx,action_idx)); % state_idx is next state_idx
+        end
     end
+    figure(1);
+    imagesc(Layer);
+    colormap(gray);
+    disp(['Episode: ',num2str(episodes),'; Qfac: ',num2str(Qfac),'; MSL: ',num2str(MSL),'; reward: ',num2str(reward)]);
+    drawnow;
+    
+    figure(2);
+    plot(lambda,R);
+    drawnow;
 end
 
 R = calR(Layer,lambda,Ngrid,dx,epsi,eps0);
 plot(lambda,R);
-[Qfac,MSL] = rewardFunc(R,lambda,tarlam_index);
+[Qfac,MSL] = rewardFunc(R,lambda,tarlam_idx);

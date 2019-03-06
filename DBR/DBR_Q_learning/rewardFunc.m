@@ -1,31 +1,35 @@
-function [Q,MSL] = rewardFunc(R,lambda,tarlam_index)
-j = tarlam_index;
+function [Q,MSL] = rewardFunc(R,lambda,tarlam_idx)
+tarint = R(tarlam_idx);
 try
-    while 1
-        if R(j) <= 0.5*tarint
-            tarhi = j;
-            break;
-        else
-            j=j+1;
-        end
-    end
-    j = tarlam_index;
-    while 1
-        if R(j) <= 0.5*tarint
-            tarlo = j;
-            break;
-        else
-            j=j-1;
-        end
-    end
-    if tarlo == tarhi
-        Q = -1e5;
-        MSL = 1;
-    else
-        Q = lambda(tarlam_index)/(1/lambda(tarlo)-1/lambda(tarhi));
-        MSL = mean(R(1,[1:tarlo, tarhi:end]));
-    end
+    [Q,MSL] = calReward(R,tarlam_idx,tarint,0.5,lambda);
 catch
-    Q = -1e5;
-    MSL = 1;
+    
+    [Q,MSL] = failReward();
 end
+
+
+
+function [Q,MSL] = calReward(R,tarlam_idx,tarint,rtar,lambda)
+for j=tarlam_idx:1:length(lambda)
+    if R(j) <= rtar*tarint
+        tarhi = j;
+        break;
+    end
+end
+
+for j=tarlam_idx:-1:1
+    if R(j) <= rtar*tarint
+        tarlo = j;
+        break;
+    end
+end
+if tarlo == tarhi
+    [Q,MSL] = failReward();
+else
+    Q = (1/rtar)*(1/lambda(tarlam_idx))/(1/lambda(tarlo)-1/lambda(tarhi));
+    MSL = (rtar)*mean(R(1,[1:tarlo, tarhi:length(lambda)]));
+end
+
+function [Q,MSL] = failReward()
+Q = -3e-1;
+MSL = 1;

@@ -1,5 +1,3 @@
-Q factor와 MSL을 따로 생각 -> weight를 주지 않고 reward 벡터라고 생각
-
 MDP (Markov Decision Process)
 - state, aciton, state transition probability matrix, reward, discount factor
 - state: agent가 인식하는 자신의 상태
@@ -37,3 +35,35 @@ Dynamic Programming
 
 Prediction & Control
 - 현재 optimal하지 않는 어떤 policy에 대해서 value function을 구하고(prediction) 현재의 value function을 토대로 더 나은 policy를 구하고 이와 같은 과정을 반복하여 optimal policy를 구하는 것
+
+Future reward
+R = r_1 + r_2 + r_3 +  ... r_n
+R_t = r_t + r_t+1 + r_t+2 + ... r_n
+R_t = r_t + R_t+1 -> R^*_t = r_t + max R_t+1
+
+Exploit vs Exploration
+
+Exploit (현재 있는 값을 사용)
+Exploration (모험을 한다)
+
+E-greedy
+e = 0.1
+if rand < e:
+    a = random
+else:
+    a = argmax(Q(s,a))
+
+decaying E-greedy
+for i in range(1000)
+e = 0.1/(i+1)
+if rand < e:
+    a = random
+else:
+    a = argmax(Q(s,a))
+
+add random noise
+rand
+decaying -> rand/(i+1)
+
+Deterministic vs Stochastic (non-deterministic)
+-> learning rate

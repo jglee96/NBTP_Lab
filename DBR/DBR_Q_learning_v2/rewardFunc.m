@@ -1,15 +1,12 @@
 function [Q,MSL] = rewardFunc(R,lambda,tarlam_idx)
 tarint = R(tarlam_idx);
-if tarint > 0.9
-    try
-        [Q,MSL] = calReward(R,tarlam_idx,tarint,0.5,lambda);
-    catch
-        
-        [Q,MSL] = failReward();
-    end
-else
+try
+    [Q,MSL] = calReward(R,tarlam_idx,tarint,0.5,lambda);
+catch
+    
     [Q,MSL] = failReward();
 end
+
 
 
 
@@ -27,10 +24,11 @@ for j=tarlam_idx:-1:1
         break;
     end
 end
+
 if tarlo == tarhi
     [Q,MSL] = failReward();
 else
-    Q = (1/lambda(tarlam_idx))/(1/lambda(tarlo)-1/lambda(tarhi));
+    Q = tarint*(1/lambda(tarlam_idx))/(1/lambda(tarlo)-1/lambda(tarhi));
     MSL = mean(R(1,[1:tarlo, tarhi:length(lambda)]));
 end
 

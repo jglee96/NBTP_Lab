@@ -11,15 +11,15 @@ rMSL = 1; % MSL scaling factor for reward
 
 %% DBR SETTINGS
 % DBR
-Ngrid = 100; % Number of grid. It is same with the actions will be taken in episode
-dx = 25; % distance unit
+Ngrid = 50; % Number of grid. It is same with the actions will be taken in episode
+dx = 5; % distance unit
 eps0 = 1; % air permittivity
 epsi = 12.25; % siliocn permittivity
 Layer = zeros(1,Ngrid); % state
 
 % wavelength
-minlam = 400;
-maxlam = 1200;
+minlam = 10;
+maxlam = 600;
 dlam = 10;
 lambda = minlam:dlam:maxlam;
 tarlam = 800;
@@ -73,7 +73,7 @@ for episodes = 1:maxEpi
         %effreward = reward-prevreward;
         disp(['State: ',num2str(mod(state_idx,Ngrid)),'; Qfac: ',num2str(Qfac),'; MSL: ',num2str(MSL),'; reward: ',num2str(reward)]);
         
-        Q(state_idx,action_idx) = Q(state_idx,action_idx) + learnRate*(reward+discount*max(Q(newstate_idx,:))-Q(state_idx,action_idx)); % state_idx is next state_idx
+        Q(state_idx,action_idx) = Q(state_idx,action_idx) + learnRate*(reward+discount*max(Q(newstate_idx,:)+rand/(episodes+1))-Q(state_idx,action_idx)); % state_idx is next state_idx
         
         state_idx = newstate_idx;
         %prevreward = reward;

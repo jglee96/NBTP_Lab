@@ -67,3 +67,14 @@ decaying -> rand/(i+1)
 
 Deterministic vs Stochastic (non-deterministic)
 -> learning rate
+
+But diverges using neural networks due to:
+- Correlations between samples: episode에서 받아오는 data들이 매우 유사하여 correlation 되어있다
+- Non-stationary targets: Y target에 가까워지기 위해 Y prediction을 update하면 target도 변한다.
+
+DQN's three solutions
+- Go deep
+말그대로 layer를 많이 사용하여 deep하게 학습
+- Capture and replay
+correlation 문제를 해결, loop를 돌떄 data를 바로 학습하지 말고 저장을 했다가 나중에 random하게 가져와서  
+- Separate networks: create a target network

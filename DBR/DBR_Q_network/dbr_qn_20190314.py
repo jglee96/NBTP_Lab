@@ -12,6 +12,7 @@ minwave = 400
 maxwave = 1200
 wavestep = 10
 wavelength = np.arrange(minwave,maxwave,wavestep)
+tarwave = 800
 
 # Input and output size based on the Env
 input_size = Ngrid
@@ -53,8 +54,8 @@ with tf.Session() as sess:
                 a = np.argmax(Qs)
             
             # Get new state and reward
-            R = DBR.calR(s,Ngrid)
-            reward = DBR.reward(s,Ngrid,R)
+            R = DBR.calR(s,Ngrid,wavelength,dx)
+            reward = DBR.reward(s,Ngrid,wavelength,R,tarwave)
             s1,done = DBR.step(s,Ngrid,a)
 
             if done:

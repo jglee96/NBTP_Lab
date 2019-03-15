@@ -20,6 +20,8 @@ class DBR:
         B21 = (1-P)*np.exp(-j*kx*h) 
         B22 = (1+P)*np.exp(j*kx*h)
 
+        return R
+
     def failreward():
         Qfac = -1
         MSL = 1
@@ -37,7 +39,7 @@ class DBR:
 
             else:
                 Qfac = tarint*(1/wavelength(taridx))/(1/wavelength(tarlo)-1/wavelength(tarhi))
-                MSL = np.mean(R[0:tarlo+1, tarlhi:-1])            
+                MSL = np.mean(np.hstack((R[0:tarlo+1],R[tarlhi:])))            
 
         except:
             Qfac,MSL = failreward()
@@ -46,6 +48,22 @@ class DBR:
         return reward
 
 
-    def step(s,Ngrid,a):
+    def step(s,Ngrid,a,dupcnt):
+        # action 0: stay
+        # action 1: go to opposite (0 -> 1, 1 -> 0) -> XOR
 
-        return (s1,done)
+        s = s.astype(bool)
+        a = a.astype(bool)
+
+        s1 = np.logical_xor(s,a)
+
+        if s1 == s:
+            dupcnt = dupcnt+1
+            if dupcnt == 10:
+                done = True
+
+        else:
+            dupcnt = 0
+
+        s1 = s1.astype(int)
+        return (s1,done,dupcnt)

@@ -43,6 +43,7 @@ with tf.Session() as sess:
     for i in range(num_episodes):
         # Reser environment and get first new observation
         s = dbr
+        dupcnt = 0
 
         # The Q-Network training
         while not done:
@@ -56,7 +57,7 @@ with tf.Session() as sess:
             # Get new state and reward
             R = DBR.calR(s,Ngrid,wavelength,dx)
             reward = DBR.reward(s,Ngrid,wavelength,R,tarwave)
-            s1,done = DBR.step(s,Ngrid,a)
+            s1,done,dupcnt = DBR.step(s,Ngrid,a,dupcnt)
 
             if done:
                 # Update Q, and no Qs+1, since it's a terminal state

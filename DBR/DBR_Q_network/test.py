@@ -27,12 +27,18 @@ import numpy as np
 # print("value = ",x[index])
 
 
-def fa():
-    b = 1
-    c = 1
-    return (b,c)
+#def fa():
+#    b = 1
+#    c = 1
+#    return (b,c)
 
-b, c = fa()
+#b, c = fa()
 
-print("b = ", b)
-print("c = ", c)
+#print("b = ", b)
+#print("c = ", c)
+
+x = np.array([0,1,2,3,4,5,6,7,8,9,10])
+
+a = np.mean(np.hstack((x[0:3],x[6:])))
+
+print("partial mean = ", a)

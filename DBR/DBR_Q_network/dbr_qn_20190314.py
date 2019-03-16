@@ -47,6 +47,7 @@ with tf.Session() as sess:
         s = dbr
         dupcnt = 0
         e = 1/(1+i)
+        rAll = 0
         done = False
 
         # The Q-Network training

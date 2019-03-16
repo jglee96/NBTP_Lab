@@ -20,13 +20,13 @@ def calR(s,Ngrid,wavelength,dx,epsi,eps0):
     B21 = (1-P)*np.exp(-1j*kx*h) 
     B22 = (1+P)*np.exp(1j*kx*h)
 
-    R = np.zeros(len(wavelength))
-    for w in range(len(wavelength)):
+    R = np.empty(len(wavelength[0]))
+    for w in range(len(wavelength[0])):
         Btot = np.eye(2)
         for i in range(Ngrid+1):
             Bt = (0.5)*np.array([[B11[w,i],B12[w,i]],[B21[w,i],B22[w,i]]])
             Btot = np.matmul(Btot,Bt)
-        R[w] = np.absolute(Btot[1,0]/Btot[0,0])**2
+        R[w] = np.abs(Btot[1,0]/Btot[0,0])**2
 
     return R
 
@@ -36,7 +36,7 @@ def failreward():
     return (Qfac,MSL)
 
 def reward(s,Ngrid,wavelength,R,tarwave):
-    taridx = np.where(wavelength == tarwave)
+    taridx = np.where(wavelength == tarwave)[0][0]
     tarint = R[taridx]
     try:
         tarhi = list(i for i in range(taridx,wavelength[-1]) if R[i] < 0.5*tarint)[0]
@@ -59,13 +59,16 @@ def reward(s,Ngrid,wavelength,R,tarwave):
 def step(s,Ngrid,a,dupcnt):
     # action 0: stay
     # action 1: go to opposite (0 -> 1, 1 -> 0) -> XOR
+    
+    done = False
+    s1 = np.copy(s)
 
-    s = s.astype(bool)
-    a = a.astype(bool)
-
-    s1 = np.logical_xor(s,a)
-
-    if s1 == s:
+    if s1[0,a] == 1:
+        s1[0,a] = 0
+    else:
+        s1[0,a] = 1
+    
+    if np.array_equal(s,s1):
         dupcnt = dupcnt+1
         if dupcnt == 10:
             done = True
@@ -73,5 +76,4 @@ def step(s,Ngrid,a,dupcnt):
     else:
         dupcnt = 0
 
-    s1 = s1.astype(int)
     return (s1,done,dupcnt)

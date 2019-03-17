@@ -35,7 +35,7 @@ def failreward():
     MSL = 1
     return (Qfac,MSL)
 
-def reward(s,Ngrid,wavelength,R,tarwave):
+def reward(Ngrid,wavelength,R,tarwave):
     taridx = np.where(wavelength == tarwave)[1][0]
     tarint = R[taridx]
     try:
@@ -56,24 +56,13 @@ def reward(s,Ngrid,wavelength,R,tarwave):
     return reward
 
 
-def step(s,Ngrid,a,dupcnt):
-    # action 0: stay
-    # action 1: go to opposite (0 -> 1, 1 -> 0) -> XOR
+def step(s,a):
     
-    done = False
     s1 = np.copy(s)
 
     if s1[0,a] == 1:
         s1[0,a] = 0
     else:
         s1[0,a] = 1
-    
-    if np.array_equal(s,s1):
-        dupcnt = dupcnt+1
-        if dupcnt == 10:
-            done = True
 
-    else:
-        dupcnt = 0
-
-    return (s1,done,dupcnt)
+    return s1

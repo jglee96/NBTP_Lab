@@ -6,7 +6,7 @@ import DBR
 # Real world environnment
 Ngrid = 100
 dx = 10
-dbr = np.zeros(shape=[1,Ngrid],dtype=np.int8)
+dbr = np.empty(shape=[1,Ngrid],dtype=np.int8)
 epsi = 12.25
 eps0 = 1.
 
@@ -48,6 +48,7 @@ with tf.Session() as sess:
         dupcnt = 0
         e = 1/(1+i)
         rAll = 0
+        prereward = 0
         done = False
 
         # The Q-Network training
@@ -55,13 +56,14 @@ with tf.Session() as sess:
             # Choose an action by greedily (with a chance of random action) from the Q-network
             Qs = sess.run(Qpred,feed_dict={X: s})
             if np.random.rand(1) < e:
-                a = np.random.randint(-1,Ngrid)
+                a = np.random.randint(Ngrid)
             else:
                 a = np.argmax(Qs)
             
             # Get new state and reward
             R = DBR.calR(s,Ngrid,wavelength,dx,epsi,eps0)
             reward = DBR.reward(s,Ngrid,wavelength,R,tarwave)
+            reward = reward - prereward # the Q factor does not belong to action.
             s1,done,dupcnt = DBR.step(s,Ngrid,a,dupcnt)
 
             if done:
@@ -74,10 +76,12 @@ with tf.Session() as sess:
                 Qs[0,a] = reward + dis*np.max(Qs1)
 
             # Train our network using target (Y) and predicted Q (Qpred) values
-            sess.run(train, feed_dict={X: s, Y:Qs})
+            sess.run(train, feed_dict={X: s, Y: Qs})
 
             rAll += reward
+            prereward = reward
             s = s1
+
         rList.append(rAll)
 
 print("percent of successful episodes: " +str(sum(rList) / num_episodes) + "%")

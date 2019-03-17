@@ -1,44 +1,9 @@
-# python code 문법 테스트 전용 파일
-
 import numpy as np
 
-#N = 10
+s = np.array([1,0,0,0,0,1,1,0,0,1])
+epsi = 12.25
+eps0 = 1.
 
-#b11 = np.array([[1,1],[1,1]])
-#b12 = np.array([[2,2],[2,2]])
-#b21 = np.array([[3,4],[5,6]])
-#b22 = np.array([[1,2],[3,4]])
-
-#b11 = np.vstack([b11 for x in range(N)])
-#b12 = np.vstack([b12 for x in range(N)])
-#b21 = np.vstack([b21 for x in range(N)])
-#b22 = np.vstack([b22 for x in range(N)])
-
-#btot = np.eye(2)
-
-#btot = btot*np.array([[b11,b12],[b21,b22]])
-
-#print(Btot)
-
-#x = np.array([1,2,3,4,5])
-#index = list(i for i in range(len(x)) if x[i] > 2)[0]
-
-#print("index = ",index)
-# print("value = ",x[index])
-
-
-#def fa():
-#    b = 1
-#    c = 1
-#    return (b,c)
-
-#b, c = fa()
-
-#print("b = ", b)
-#print("c = ", c)
-
-x = np.array([0,1,2,3,4,5,6,7,8,9,10])
-
-a = np.mean(np.hstack((x[0:3],x[6:])))
-
-print("partial mean = ", a)
+ei_element = epsi*(s == 1).astype(int)
+e0_element = eps0*(s == 0).astype(int)
+epst = ei_element + e0_element

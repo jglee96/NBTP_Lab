@@ -36,10 +36,10 @@ def failreward():
     return (Qfac,MSL)
 
 def reward(s,Ngrid,wavelength,R,tarwave):
-    taridx = np.where(wavelength == tarwave)[0][0]
+    taridx = np.where(wavelength == tarwave)[1][0]
     tarint = R[taridx]
     try:
-        tarhi = list(i for i in range(taridx,wavelength[-1]) if R[i] < 0.5*tarint)[0]
+        tarhi = list(i for i in range(taridx,wavelength.shape[1]) if R[i] < 0.5*tarint)[0]
         tarlo = list(i for i in range(taridx,0) if R[i] < 0.5*tarint)[0]
 
         if tarlo == tarhi:
@@ -47,9 +47,9 @@ def reward(s,Ngrid,wavelength,R,tarwave):
 
         else:
             Qfac = tarint*(1/wavelength(taridx))/(1/wavelength(tarlo)-1/wavelength(tarhi))
-            MSL = np.mean(np.hstack((R[0:tarlo+1],R[tarlhi:])))            
+            MSL = np.mean(np.hstack((R[0:tarlo+1],R[tarhi:])))            
 
-    except:
+    except IndexError:
         Qfac,MSL = failreward()
     
     reward = Qfac/MSL

@@ -44,8 +44,8 @@ train = tf.train.GradientDescentOptimizer(learning_rate=learning_rate).minimize(
 
 # Set Q-learning related parameters
 dis = .5
-num_episodes = 100
-num_iter = 100
+num_episodes = 5000
+num_iter = 1000
 
 # Create lists to contain total rewards and steps per episode
 rList = []
@@ -95,4 +95,7 @@ with tf.Session() as sess:
 
 print("percent of successful episodes: " +str(sum(rList) / num_episodes) + "%")
 plt.bar(range(len(rList)), rList, color="blue")
+plt.show()
+
+plt.imshow(s, cmap = "gray")
 plt.show()

@@ -5,8 +5,7 @@ import DBR
 
 # Real world environnment
 Ngrid = 100
-dx = 10
-dbr = np.zeros(shape=[1,Ngrid],dtype=np.int8)
+dx = 5
 epsi = 12.25
 eps0 = 1.
 
@@ -45,7 +44,7 @@ train = tf.train.GradientDescentOptimizer(learning_rate=learning_rate).minimize(
 
 # Set Q-learning related parameters
 dis = .5
-num_episodes = 2000
+num_episodes = 100
 num_iter = 100
 
 # Create lists to contain total rewards and steps per episode
@@ -56,11 +55,10 @@ with tf.Session() as sess:
     sess.run(init)
     for i in range(num_episodes):
         # Reser environment and get first new observation
-        s = dbr
+        s = np.random.randint(2, size=(1,Ngrid))
         e = 1/(1+i)
         rAll = 0
         prereward = 0
-        done = False
 
         # The Q-Network training
         for iteridx in range(num_iter):

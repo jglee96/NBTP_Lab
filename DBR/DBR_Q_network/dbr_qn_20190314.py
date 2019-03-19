@@ -5,6 +5,8 @@ import DBR
 
 # Real world environnment
 Ngrid = 100
+N1 = Ngrid
+N2 = Ngrid
 dx = 5
 epsi = 12.25
 eps0 = 1.
@@ -18,47 +20,48 @@ tarwave = 800
 # Input and output size based on the Env
 input_size = Ngrid
 output_size = Ngrid
-learning_rate = 0.1
+learning_rate = 0.01
 
 # These lines establish the feed-forward part of the network used to
 # choose actions
-X = tf.placeholder(shape=[1,input_size],dtype=tf.float32) # state input
+with tf.device('/device:GPU:1'):
+    X = tf.placeholder(shape=[1,input_size],dtype=tf.float32) # state input
 
-N1 = Ngrid
-W1 = tf.Variable(tf.random_uniform([input_size,N1],0,1)) # weight
-b1 = tf.Variable(tf.random_uniform([N1],0,1)) # weight
-L1 = tf.nn.relu(tf.matmul(X,W1) + b1)
+    W1 = tf.Variable(tf.random_uniform([input_size,N1],minval=0,maxval=0.01)) # weight
+#    b1 = tf.Variable(tf.random_uniform([N1],minval=0,maxval=0.01)) # weight
+    L1 = tf.nn.relu(tf.matmul(X,W1))
+    
+    W2 = tf.Variable(tf.random_uniform([N1,N2],minval=0,maxval=0.01)) # weight
+#    b2 = tf.Variable(tf.random_uniform([N2],minval=0,maxval=0.01)) # weight
+    L2 = tf.nn.relu(tf.matmul(L1,W2))
 
-N2 = Ngrid
-W2 = tf.Variable(tf.random_uniform([N1,N2],0,1)) # weight
-b2 = tf.Variable(tf.random_uniform([N2],0,1)) # weight
-L2 = tf.nn.relu(tf.matmul(L1,W2) + b2)
+    W3 = tf.Variable(tf.random_uniform([N2,output_size],minval=0,maxval=0.01)) # weight
+#    b3 = tf.Variable(tf.random_uniform([output_size],minval=0,maxval=0.01)) # weight
+    Qpred = tf.matmul(L2,W3) # Out Q prediction
+    Y = tf.placeholder(shape=[1,output_size],dtype=tf.float32)
 
-W3 = tf.Variable(tf.random_uniform([N2,output_size],0,1)) # weight
-b3 = tf.Variable(tf.random_uniform([output_size],0,1)) # weight
-Qpred = tf.matmul(L2,W3) + b3 # Out Q prediction
-Y = tf.placeholder(shape=[1,output_size],dtype=tf.float32)
-
-loss = tf.reduce_sum(tf.square(Y-Qpred))
-train = tf.train.GradientDescentOptimizer(learning_rate=learning_rate).minimize(loss) # Y label
+    loss = tf.reduce_sum(tf.square(Y-Qpred))
+    train = tf.train.GradientDescentOptimizer(learning_rate=learning_rate).minimize(loss) # Y label
 
 # Set Q-learning related parameters
-dis = .5
-num_episodes = 5000
-num_iter = 1000
+dis = .99
+num_episodes = 100
+num_iter = 100
 
 # Create lists to contain total rewards and steps per episode
 rList = []
 
 init = tf.global_variables_initializer()
 with tf.Session() as sess:
+    sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
     sess.run(init)
     for i in range(num_episodes):
         # Reser environment and get first new observation
-        s = np.random.randint(2, size=(1,Ngrid))
+        s = np.zeros((1,Ngrid))
         e = 1/(1+i)
         rAll = 0
         prereward = 0
+        local_loss = []
 
         # The Q-Network training
         for iteridx in range(num_iter):
@@ -71,8 +74,8 @@ with tf.Session() as sess:
             
             # Get new state and reward
             R = DBR.calR(s,Ngrid,wavelength,dx,epsi,eps0)
-            reward = DBR.reward(Ngrid,wavelength,R,tarwave)
-            reward = reward - prereward # the Q factor does not belong to action.
+            rawreward = DBR.reward(Ngrid,wavelength,R,tarwave)
+            reward = rawreward - prereward # the Q factor does not belong to action.
             s1 = DBR.step(s,a)
 
             if iteridx == num_iter-1:
@@ -88,8 +91,8 @@ with tf.Session() as sess:
             sess.run(train, feed_dict={X: s, Y: Qs})
 
             rAll += reward
-            prereward = reward
-            s = s1
+            prereward = rawreward
+            s = s1.copy()
 
         rList.append(rAll)
 

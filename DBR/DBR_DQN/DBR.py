@@ -42,51 +42,13 @@ def calFWHM(R,wavelength,tarwave,ratio):
     tarhi = list(i for i in range(taridx,wavelength.shape[1],1) if R[i] < ratio*tarint)
     tarlo = list(i for i in range(taridx,0,-1) if R[i] < ratio*tarint)
 
-#    if tarlo == tarhi:
-#        Qfac,MSL = failreward()
-#
-#    else:
-#        Qfac = (1/ratio)*tarint*(1/wavelength[0][taridx])/(1/wavelength[0][tarlo]-1/wavelength[0][tarhi])
-#        MSL = np.mean(np.hstack((R[0:tarlo+1],R[tarhi:])))
-        
-#    return (Qfac,MSL)
     return (tarhi,tarlo)
 
 def reward(Ngrid,wavelength,R,tarwave):
     taridx = np.where(wavelength == tarwave)[1][0]
     tarint = R[taridx]
     done = True
-#    try:
-#        tarhi = list(i for i in range(taridx,wavelength.shape[1]) if R[i] < 0.5*tarint)[0]
-#        tarlo = list(i for i in range(taridx,0) if R[i] < 0.5*tarint)[0]
-#
-#        if tarlo == tarhi:
-#            Qfac,MSL = failreward()
-#
-#        else:
-#            Qfac = tarint*(1/wavelength(taridx))/(1/wavelength(tarlo)-1/wavelength(tarhi))
-#            MSL = np.mean(np.hstack((R[0:tarlo+1],R[tarhi:])))            
-#
-#    except IndexError:
-#        Qfac,MSL = failreward()
-#    
-#    reward = Qfac/MSL
-#    maxR = np.argmax(R)
-#    maxRwave = wavelength[0][maxR]
-#    reward = (tarwave - np.mean(np.abs(maxRwave-tarwave)))/100
-#    
-#    return reward
 
-#    try:
-#        Qfac,MSL = calFWHM(R,wavelength,tarwave,0.5)
-#    except IndexError:
-#        try:
-#            Qfac,MSL = calFWHM(R,wavelength,tarwave,0.7)
-#        except IndexError:
-#            try:
-#                Qfac,MSL = calFWHM(R,wavelength,tarwave,0.9)
-#            except IndexError:
-#                Qfac,MSL = failreward()
     ratio = np.array([0.5, 0.6, 0.7, 0.8, 0.9])
     for i in ratio:
         tarhi,tarlo = calFWHM(R,wavelength,tarwave,i)

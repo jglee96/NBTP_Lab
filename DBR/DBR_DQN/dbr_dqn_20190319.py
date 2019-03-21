@@ -6,12 +6,13 @@ from collections import deque
 import DBR
 import dqn
 from typing import List
+from datetime import datetime
 
 # Real world environnment
-Ngrid = 100
+Ngrid = 200
 N1 = Ngrid
 N2 = Ngrid
-dx = 5
+dx = 10
 epsi = 12.25
 eps0 = 1.
 
@@ -21,19 +22,15 @@ wavestep = 10
 wavelength = np.array([np.arange(minwave,maxwave,wavestep)])
 tarwave = 800
 
-R = []
-state = []
-
 # Constants defining our neural network
 INPUT_SIZE = Ngrid
 OUTPUT_SIZE = Ngrid
 
 DISCOUNT_RATE = 0.99
 REPLAY_MEMORY = 50000
-BATCH_SIZE = 64
-TARGET_UPDATE_FREQUENCY = 10
-MAX_EPISODES = 1000
-MAX_ITERATION = 500
+BATCH_SIZE = 50
+TARGET_UPDATE_FREQUENCY = 5
+MAX_EPISODES = 5000
 
 # Clear our computational graph
 tf.reset_default_graph()
@@ -93,7 +90,7 @@ def get_copy_var_ops(*, dest_scope_name: str, src_scope_name: str) -> List[tf.Op
 def main():
     # store the previous observations in replay memory
     replay_buffer = deque(maxlen=REPLAY_MEMORY)
-
+    
     with tf.Session() as sess:
         sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
         mainDQN = dqn.DQN(sess, INPUT_SIZE, OUTPUT_SIZE, name="main")
@@ -107,11 +104,14 @@ def main():
 
         for episode in range(MAX_EPISODES):
             e = 1. / ((episode / 10) + 1)
-            state = np.zeros((1,Ngrid))
+#            state = np.random.randint(2,size=(1,Ngrid))
+#            state = np.zeros((1,Ngrid))
+            state = np.ones((1,Ngrid))
             prereward = 0
+            step_count = 0
             done = False
 
-            for iteridx in range(MAX_ITERATION):
+            while not done:
                 if np.random.rand(1) < e:
                     action = np.random.randint(Ngrid)
                 else:
@@ -123,7 +123,7 @@ def main():
                 rawreward = DBR.reward(Ngrid,wavelength,R,tarwave)
                 reward = rawreward - prereward # the Q factor does not belong to action.
                 next_state = DBR.step(state,action)
-                if iteridx == MAX_ITERATION-1: done = True
+                if rawreward < 0 and step_count != 0: done = True
 
                 # Save the experience to our buffer
                 replay_buffer.append((state, action, reward, next_state, done))
@@ -132,19 +132,33 @@ def main():
                     minibatch = random.sample(replay_buffer, BATCH_SIZE)
                     loss, _ = replay_train(mainDQN, targetDQN, minibatch)
 
-                if iteridx % TARGET_UPDATE_FREQUENCY == 0:
+                if step_count % TARGET_UPDATE_FREQUENCY == 0:
                     sess.run(copy_ops)
 
                 state = next_state.copy()
+                step_count += 1
+            print("Episodes: {}, {}% steps: {}".format(episode,100*episode/MAX_EPISODES,step_count))
     
+    file_name = 'Rresult_'+datetime.now().strftime("%Y-%m-%d")+'.txt'
+    f = open(file_name,'w')
+    print(R,file=f)
+    f.close()
+    
+    file_name = 'Sresult_'+datetime.now().strftime("%Y-%m-%d")+'.txt'
+    f = open(file_name,'w')
+    print(state,file=f)
+    f.close()
+    
+    x = np.reshape(wavelength,wavelength.shape[1])
     plt.subplot(2,1,1)
-    plt.plot(wavelength,R)
+    plt.plot(x,R)
     
     plt.subplot(2,1,2)
-    plt.imshow(state,cmap='grays')
-    plt.savefig('result model')
+    plt.imshow(state,cmap='gray')    
     
+    fig = plt.gcf()
     plt.show()
+    fig.savefig('result model.png')
 
 
 if __name__ == "__main__":

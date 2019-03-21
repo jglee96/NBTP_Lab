@@ -34,20 +34,25 @@ class DQN:
 
         self._build_network()
 
-    def _build_network(self, h_size=16, l_rate=0.001) -> None:
+    def _build_network(self, l_rate=0.001) -> None:
         """DQN Network architecture (simple MLP)
 
         Args:
-            h_size (int, optional): Hidden layer dimension
             l_rate (float, optional): Learning rate
         """
+        # hiddenlayer's number and length
+        Hidden_Layer = np.array([round(self.input_size/2), round(self.input_size/4)])
+        
         with tf.variable_scope(self.net_name):
             with tf.device('/device:GPU:1'):
                 self._X = tf.placeholder(tf.float32, [None, self.input_size], name="input_x")
                 net = self._X
-
-                net = tf.layers.dense(net, h_size, activation=tf.nn.relu)
-                net = tf.layers.dense(net, self.output_size)
+                
+                # more hidden layer not one
+                for h_size in Hidden_Layer:
+                    #activation function is leaky_relu
+                    net = tf.layers.dense(net, h_size, activation=tf.nn.leaky_relu)
+                    net = tf.layers.dense(net, self.output_size)
                 self._Qpred = net
 
                 self._Y = tf.placeholder(tf.float32, shape=[None, self.output_size])

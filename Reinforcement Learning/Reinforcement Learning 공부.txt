@@ -78,3 +78,20 @@ DQN's three solutions
 - Capture and replay
 correlation 문제를 해결, loop를 돌떄 data를 바로 학습하지 말고 저장을 했다가 나중에 random하게 가져와서  
 - Separate networks: create a target network
+
+Atari game DQN
+- raw pixel을 directly input으로 사용하기 위해 CNN network를 사용 -> pixels를 독립적인 input으로 삼기보다는 주변 pixel과 함께 하나의 region으로써 인식하기 위함
+- CNN은 인간이 시각세포를 이용하여 시각을 얻는 방법과 유사
+
+Double DQN
+- normal DQN에 대한 문제 제기: data sampling시 frequent state에서의 action에 따라 결정되는 Q-value가 overestimate된다 -> optimal action이 아닌 다른(sub optimal) action을 취하도록 학습
+
+Dualing DQN
+- Q-value를 2개로 쪼갬: Q(s,a) = V(s) + A(a,s)
+    V(s): state value function (전에 나온 함수)
+    A(a,s): advatage function (다른 aciton을 취했을 때보다 얼마나 더 좋은지를 나타내는 함수)
+    -> 마지막에 다시 결합
+
+How to choose the number of hidden layers and nodes in a feedforward neural network?
+https://stats.stackexchange.com/questions/181/how-to-choose-the-number-of-hidden-layers-and-nodes-in-a-feedforward-neural-netw
+-> dimension: input과 output사이, layer개수: 1개여도 충분한 경우가 많음

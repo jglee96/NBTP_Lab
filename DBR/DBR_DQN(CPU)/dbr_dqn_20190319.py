@@ -28,9 +28,9 @@ OUTPUT_SIZE = Ngrid
 
 DISCOUNT_RATE = 0.99
 BATCH_SIZE = 50
-REPLAY_MEMORY = 100000
+REPLAY_MEMORY = 100000 # usually use 1e6
 TARGET_UPDATE_FREQUENCY = 10
-MAX_EPISODES = 500
+MAX_EPISODES = 2000
 
 # Clear our computational graph
 tf.reset_default_graph()
@@ -139,7 +139,7 @@ def main():
                     sess.run(copy_ops)
 
                 rAll += reward
-#                prereward = rawreward
+                prereward = rawreward
                 state = next_state.copy()
                 step_count += 1
                 

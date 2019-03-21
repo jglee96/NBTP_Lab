@@ -148,14 +148,21 @@ def main():
                 
             rList.append(rAll)
             sList.append(step_count)
-            print("Episodes: {}({}%), steps: {}".format(episode,100*episode/MAX_EPISODES,step_count))
+            print("Episodes: {}({}%), steps: {}".format(episode,100*(episode+1)/MAX_EPISODES,step_count))
+        
+        # name for saveing neural network model
+        save_file = './model/dqn_'+datetime.now().strftime("%Y-%m-%d-%H")+'.ckpt'
+        saver = tf.train.Saver()
+        # Save the model
+        saver.save(sess, save_file)
+        print('*****Trained Model Save(',datetime.now().strftime("%Y-%m-%d-%H"),'*****')
     
-    file_name = 'Rresult_'+datetime.now().strftime("%Y-%m-%d")+'.txt'
+    file_name = 'Rresult_'+datetime.now().strftime("%Y-%m-%d-%H")+'.txt'
     f = open(file_name,'w')
     print(R,file=f)
     f.close()
     
-    file_name = 'Sresult_'+datetime.now().strftime("%Y-%m-%d")+'.txt'
+    file_name = 'Sresult_'+datetime.now().strftime("%Y-%m-%d-%H")+'.txt'
     f = open(file_name,'w')
     print(state,file=f)
     f.close()

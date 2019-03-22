@@ -42,19 +42,21 @@ class DQN:
         """
         # hiddenlayer's number and length
         Hidden_Layer = np.array([round(self.input_size), round(self.input_size)])
+        Layer_name = ['W1', 'W2']
+        num_layer = 2
         
         with tf.variable_scope(self.net_name):
             self._X = tf.placeholder(tf.float32, [None, self.input_size], name="input_x")
             net = self._X
                 
             # more hidden layer not one
-            for h_size in Hidden_Layer:
+            for i in range(num_layer):
                 #activation function is leaky_relu
-                net = tf.layers.dense(net, h_size, activation=tf.nn.leaky_relu)
-                net = tf.layers.dense(net, self.output_size)
+                net = tf.layers.dense(net, Hidden_Layer[i], activation=tf.nn.leaky_relu,name=Layer_name[i])
+            net = tf.layers.dense(net, self.output_size)
             self._Qpred = net
 
-            self._Y = tf.placeholder(tf.float32, shape=[None, self.output_size])
+            self._Y = tf.placeholder(tf.float32, shape=[None, self.output_size], name="output_y")
             self._loss = tf.losses.mean_squared_error(self._Y, self._Qpred)
 
             optimizer = tf.train.AdamOptimizer(learning_rate=l_rate)

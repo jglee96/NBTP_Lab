@@ -44,6 +44,19 @@ def calFWHM(R,wavelength,tarwave,ratio):
 
     return (tarhi,tarlo)
 
+def calQfac(R,wavelength,tarwave):
+    taridx = np.where(wavelength == tarwave)[1][0]
+
+    tarhi,tarlo = calFWHM(R,wavelength,tarwave,0.5)
+    if (tarhi) and (tarlo):
+        tarhi = tarhi[0]
+        tarlo = tarlo[0]
+        Qfac = (1/wavelength[0,taridx])/(1/wavelength[0,tarlo]-1/wavelength[0,tarhi])
+    else:
+        Qfac,MSL = failreward()
+    
+    return Qfac
+
 def reward(Ngrid,wavelength,R,tarwave):
     taridx = np.where(wavelength == tarwave)[1][0]
     tarint = R[taridx]

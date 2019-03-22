@@ -11,13 +11,19 @@ import random
 #
 #print("result = ", smean)
 
-buffer = deque(maxlen = 100)
-batch_size = 20
+#buffer = deque(maxlen = 100)
+#batch_size = 20
+#
+#for i in range(50):
+#    buffer.append(i)
+#
+#if len(buffer) > batch_size:
+#    minibatch = random.sample(buffer, batch_size)
+#
+#print("buffer length = ",len(buffer),"minibatch length = ",len(minibatch))
 
-for i in range(50):
-    buffer.append(i)
 
-if len(buffer) > batch_size:
-    minibatch = random.sample(buffer, batch_size)
+a = ['W1', 'W2']
 
-print("buffer length = ",len(buffer),"minibatch length = ",len(minibatch))
+for i in range(2):
+        print(a[i])

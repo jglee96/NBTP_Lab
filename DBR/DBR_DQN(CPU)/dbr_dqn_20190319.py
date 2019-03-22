@@ -28,7 +28,7 @@ OUTPUT_SIZE = Ngrid
 
 DISCOUNT_RATE = 0.99
 BATCH_SIZE = 50
-REPLAY_MEMORY = 100000 # usually use 1e6
+REPLAY_MEMORY = 100000 # usually use 1e6, ideally infinite
 TARGET_UPDATE_FREQUENCY = 10
 MAX_EPISODES = 2000
 
@@ -151,7 +151,7 @@ def main():
             print("Episodes: {}({}%), steps: {}".format(episode,100*(episode+1)/MAX_EPISODES,step_count))
         
         # name for saveing neural network model
-        save_file = './model/dqn_'+datetime.now().strftime("%Y-%m-%d-%H")+'.ckpt'
+        save_file = './model/dqn_'+datetime.now().strftime("%Y-%m-%d-%H")
         saver = tf.train.Saver()
         # Save the model
         saver.save(sess, save_file)
@@ -173,6 +173,10 @@ def main():
     
     plt.subplot(2,1,2)
     plt.bar(range(len(sList)),sList,color="blue")
+    fig1 = plt.gcf()
+    plt.show()
+    fig1_name = datetime.now().strftime("%Y-%m-%d-%H")+'_rList_sList.png'
+    fig1.savefig(fig1_name)
     
     
     x = np.reshape(wavelength,wavelength.shape[1])
@@ -183,9 +187,10 @@ def main():
     plt.subplot(2,1,2)
     plt.imshow(state,cmap='gray')    
     
-    fig = plt.gcf()
+    fig2 = plt.gcf()
     plt.show()
-    fig.savefig('result model.png')
+    fig2_name = datetime.now().strftime("%Y-%m-%d-%H")+'_result model.png'
+    fig2.savefig(fig2_name)
 
 
 if __name__ == "__main__":

@@ -1,10 +1,10 @@
 import numpy as np
+from datetime import datetime
 
-s = np.array([1,0,0,0,0,2,1,0,0,1])
-s1 = 3
-s2 = 5
-smean = np.mean(np.hstack((s[0:s1+1],s[s2:])))
+s = np.array([[1,0,0,0,0,2,1,0,0,1]])
 
-sidx = np.where(s == 2)[0][0]
+ss = np.reshape(s,s.shape[1])
 
-print("result = ", smean)
+file_name = 'result_'+datetime.now().strftime("%Y-%m-%d")+'.txt'
+
+print(file_name)

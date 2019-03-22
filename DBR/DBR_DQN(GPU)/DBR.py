@@ -2,6 +2,7 @@ import numpy as np
 
 
 def calR(s,Ngrid,wavelength,dx,epsi,eps0):
+    lenwave = len(wavelength[0])
     ei_element = epsi*(s == 1).astype(int)
     e0_element = eps0*(s == 0).astype(int)
     epst = ei_element + e0_element
@@ -12,16 +13,16 @@ def calR(s,Ngrid,wavelength,dx,epsi,eps0):
     kx = np.sqrt(Pn)*2*np.pi/np.transpose(wavelength)
     h = np.hstack(([np.array([dx for i in range(Ngrid)])],[[0]]))
     
-    P = np.vstack([P for x in range(len(wavelength))]) # extend for wavelength dependent calcaulation
-    h = np.vstack([h for x in range(len(wavelength))]) # extend for wavelength dependent calcaulation
+    P = np.vstack([P for x in range(lenwave)]) # extend for wavelength dependent calcaulation
+    h = np.vstack([h for x in range(lenwave)]) # extend for wavelength dependent calcaulation
 
     B11 = (1+P)*np.exp(-1j*kx*h)
     B12 = (1-P)*np.exp(1j*kx*h)
     B21 = (1-P)*np.exp(-1j*kx*h) 
     B22 = (1+P)*np.exp(1j*kx*h)
 
-    R = np.empty(len(wavelength[0]))
-    for w in range(len(wavelength[0])):
+    R = np.empty(lenwave)
+    for w in range(lenwave):
         Btot = np.eye(2)
         for i in range(Ngrid+1):
             Bt = (0.5)*np.array([[B11[w,i],B12[w,i]],[B21[w,i],B22[w,i]]])
@@ -71,10 +72,11 @@ def reward(Ngrid,wavelength,R,tarwave):
 def step(s,a):
     
     s1 = np.copy(s)
-
+    
     if s1[0,a] == 1:
         s1[0,a] = 0
     else:
         s1[0,a] = 1
+
 
     return s1

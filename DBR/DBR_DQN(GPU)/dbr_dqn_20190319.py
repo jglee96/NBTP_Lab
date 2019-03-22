@@ -16,9 +16,9 @@ dx = 10
 epsi = 12.25
 eps0 = 1.
 
-minwave = 400
-maxwave = 1200
-wavestep = 10
+minwave = 500
+maxwave = 1100
+wavestep = 25
 wavelength = np.array([np.arange(minwave,maxwave,wavestep)])
 tarwave = 800
 
@@ -27,10 +27,10 @@ INPUT_SIZE = Ngrid
 OUTPUT_SIZE = Ngrid
 
 DISCOUNT_RATE = 0.99
-REPLAY_MEMORY = 2*Ngrid
 BATCH_SIZE = 50
+REPLAY_MEMORY = 100000 # usually use 1e6
 TARGET_UPDATE_FREQUENCY = 10
-MAX_EPISODES = 1000
+MAX_EPISODES = 2000
 
 # Clear our computational graph
 tf.reset_default_graph()
@@ -90,6 +90,9 @@ def get_copy_var_ops(*, dest_scope_name: str, src_scope_name: str) -> List[tf.Op
 def main():
     # store the previous observations in replay memory
     replay_buffer = deque(maxlen=REPLAY_MEMORY)
+    # Create lists to contain total rewards and step count per episode
+    rList = []
+    sList = []
     
     with tf.Session() as sess:
         sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
@@ -109,6 +112,7 @@ def main():
             state = np.ones((1,Ngrid))
             prereward = 0
             step_count = 0
+            rAll = 0
             done = False
 
             while not done:
@@ -135,21 +139,45 @@ def main():
                 if step_count % TARGET_UPDATE_FREQUENCY == 0:
                     sess.run(copy_ops)
 
+                rAll += reward
+#                prereward = rawreward
                 state = next_state.copy()
                 step_count += 1
-            print("Episodes: {}({}%), steps: {}".format(episode,100*episode/MAX_EPISODES,step_count))
+                
+                if step_count > Ngrid:
+                    break
+                
+            rList.append(rAll)
+            sList.append(step_count)
+            print("Episodes: {}({}%), steps: {}".format(episode,100*(episode+1)/MAX_EPISODES,step_count))
+        
+        # name for saveing neural network model
+        save_file = './model/dqn_'+datetime.now().strftime("%Y-%m-%d-%H")+'.ckpt'
+        saver = tf.train.Saver()
+        # Save the model
+        saver.save(sess, save_file)
+        print('*****Trained Model Save(',datetime.now().strftime("%Y-%m-%d-%H"),'*****')
     
-    file_name = 'Rresult_'+datetime.now().strftime("%Y-%m-%d")+'.txt'
+    file_name = 'Rresult_'+datetime.now().strftime("%Y-%m-%d-%H")+'.txt'
     f = open(file_name,'w')
     print(R,file=f)
     f.close()
     
-    file_name = 'Sresult_'+datetime.now().strftime("%Y-%m-%d")+'.txt'
+    file_name = 'Sresult_'+datetime.now().strftime("%Y-%m-%d-%H")+'.txt'
     f = open(file_name,'w')
     print(state,file=f)
     f.close()
     
+    plt.figure(1)
+    plt.subplot(2,1,1)
+    plt.bar(range(len(rList)),rList,color="blue")
+    
+    plt.subplot(2,1,2)
+    plt.bar(range(len(sList)),sList,color="blue")
+    
+    
     x = np.reshape(wavelength,wavelength.shape[1])
+    plt.figure(2)
     plt.subplot(2,1,1)
     plt.plot(x,R)
     

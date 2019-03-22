@@ -95,3 +95,6 @@ Dualing DQN
 How to choose the number of hidden layers and nodes in a feedforward neural network?
 https://stats.stackexchange.com/questions/181/how-to-choose-the-number-of-hidden-layers-and-nodes-in-a-feedforward-neural-netw
 -> dimension: input과 output사이, layer개수: 1개여도 충분한 경우가 많음
+
+*Tensorflow 모델을 저장하고 불러오기
+https://goodtogreate.tistory.com/entry/Saving-and-Restoring

@@ -9,28 +9,26 @@ from typing import List
 from datetime import datetime
 
 # Real world environnment
-Ngrid = 200
-N1 = Ngrid
-N2 = Ngrid
+Ngrid = 150
 dx = 10
 epsi = 12.25
 eps0 = 1.
 
-minwave = 500
-maxwave = 1100
-wavestep = 25
+minwave = 600
+maxwave = 1000
+wavestep = 5
 wavelength = np.array([np.arange(minwave,maxwave,wavestep)])
 tarwave = 800
 
 # Constants defining our neural network
 INPUT_SIZE = Ngrid
-OUTPUT_SIZE = Ngrid
+OUTPUT_SIZE = 2*Ngrid
 
 DISCOUNT_RATE = 0.99
-BATCH_SIZE = 50
+BATCH_SIZE = 32
 REPLAY_MEMORY = 100000 # usually use 1e6, ideally infinite
 TARGET_UPDATE_FREQUENCY = 10
-MAX_EPISODES = 2000
+MAX_EPISODES = 500
 
 # Clear our computational graph
 tf.reset_default_graph()
@@ -94,10 +92,12 @@ def main():
     rList = []
     sList = []
     
-    with tf.Session() as sess:
+    with tf.Session() as sess:        
+        # Network settings
         mainDQN = dqn.DQN(sess, INPUT_SIZE, OUTPUT_SIZE, name="main")
         targetDQN = dqn.DQN(sess, INPUT_SIZE, OUTPUT_SIZE, name="target")
-        sess.run(tf.global_variables_initializer())
+        sess.run(tf.global_variables_initializer()) # Initialize Tensorflow variables
+        mainDQN.writer.add_graph(sess.graph)
 
         # initial copy q_net -> target_net
         copy_ops = get_copy_var_ops(dest_scope_name="target",
@@ -105,10 +105,10 @@ def main():
         sess.run(copy_ops)
 
         for episode in range(MAX_EPISODES):
-            e = 1. / ((episode / 10) + 1)
+            e = 1. / ((episode / 100) + 1)
 #            state = np.random.randint(2,size=(1,Ngrid))
 #            state = np.zeros((1,Ngrid))
-            state = np.ones((1,Ngrid))
+            state = np.ones(Ngrid)
             prereward = 0
             step_count = 0
             rAll = 0
@@ -125,21 +125,22 @@ def main():
                 R = DBR.calR(state,Ngrid,wavelength,dx,epsi,eps0)
                 rawreward = DBR.reward(Ngrid,wavelength,R,tarwave)
                 reward = rawreward - prereward # the Q factor does not belong to action.
-                next_state = DBR.step(state,action)
-                if rawreward < 0 and step_count != 0: done = True
+                next_state = DBR.step(state,action,Ngrid)
+                if rawreward < 0: done = True
 
                 # Save the experience to our buffer
                 replay_buffer.append((state, action, reward, next_state, done))
 
                 if len(replay_buffer) > BATCH_SIZE:
                     minibatch = random.sample(replay_buffer, BATCH_SIZE)
-                    loss, _ = replay_train(mainDQN, targetDQN, minibatch)
+                    summary, loss, _ = replay_train(mainDQN, targetDQN, minibatch)
+                    mainDQN.writer.add_summary(summary, global_step=episode)
 
                 if step_count % TARGET_UPDATE_FREQUENCY == 0:
                     sess.run(copy_ops)
 
                 rAll += reward
-                prereward = rawreward
+#                prereward = rawreward
                 state = next_state.copy()
                 step_count += 1
                 
@@ -148,31 +149,32 @@ def main():
                 
             rList.append(rAll)
             sList.append(step_count)
-            print("Episodes: {}({}%), steps: {}".format(episode,100*(episode+1)/MAX_EPISODES,step_count))
+            print("Episodes: {}({:.2f}%), steps: {}".format(episode,100*(episode+1)/MAX_EPISODES,step_count))
         
         # name for saveing neural network model
-        save_file = './model/dqn_'+datetime.now().strftime("%Y-%m-%d-%H")
+        save_file = './model/dqn_'+datetime.now().strftime("%Y%m%d%H")+'.ckpt'
+        # Add ops to save and restore all the variables.
         saver = tf.train.Saver()
         # Save the model
         saver.save(sess, save_file)
-        print('*****Trained Model Save(',datetime.now().strftime("%Y-%m-%d-%H"),'*****')
+        print('*****Trained Model Save(',save_file,'*****')
     
-    file_name = 'Rresult_'+datetime.now().strftime("%Y-%m-%d-%H")+'.txt'
+    file_name = 'Rresult_'+datetime.now().strftime("%Y%m%d%H")+'.txt'
     f = open(file_name,'w')
     print(R,file=f)
     f.close()
     
-    file_name = 'Sresult_'+datetime.now().strftime("%Y-%m-%d-%H")+'.txt'
+    file_name = 'Sresult_'+datetime.now().strftime("%Y%m%d%H")+'.txt'
     f = open(file_name,'w')
     print(state,file=f)
     f.close()
     
     plt.figure(1)
     plt.subplot(2,1,1)
-    plt.bar(range(len(rList)),rList,color="blue")
+    plt.plot(range(len(rList)),rList)
     
     plt.subplot(2,1,2)
-    plt.bar(range(len(sList)),sList,color="blue")
+    plt.plot(range(len(sList)),sList)
     fig1 = plt.gcf()
     plt.show()
     fig1_name = datetime.now().strftime("%Y-%m-%d-%H")+'_rList_sList.png'

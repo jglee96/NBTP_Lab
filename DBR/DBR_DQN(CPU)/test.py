@@ -1,6 +1,7 @@
 import numpy as np
 from collections import deque
-import random
+import tensorflow as tf
+import os
 
 #s = np.array([1,0,0,0,0,2,1,0,0,1])
 #s1 = 3
@@ -22,8 +23,19 @@ import random
 #
 #print("buffer length = ",len(buffer),"minibatch length = ",len(minibatch))
 
+#
+#a = ['W1', 'W2']
+#
+#for i in range(2):
+#        print(a[i])
 
-a = ['W1', 'W2']
 
-for i in range(2):
-        print(a[i])
+MODEL_PATH = './model/'
+MODEL_NAME = 'dqn_2019032616.ckpt'
+
+load_path = os.path.join(MODEL_PATH,MODEL_NAME)
+
+variables = tf.contrib.framework.list_variables(load_path)
+
+for i, v in enumerate(variables):
+    print("{}. name : {} \n    shape : {}".format(i, v[0], v[1]))

@@ -6,11 +6,11 @@ def calR(s,Ngrid,wavelength,dx,epsi,eps0):
     e0_element = eps0*(s == 0).astype(int)
     epst = ei_element + e0_element
 
-    Pn = np.hstack((epst,[[1]]))
-    Pn1 = np.hstack(([[1]],epst))
+    Pn = np.hstack((epst,[1]))
+    Pn1 = np.hstack(([1],epst))
     P = Pn/Pn1
     kx = np.sqrt(Pn)*2*np.pi/np.transpose(wavelength)
-    h = np.hstack(([np.array([dx for i in range(Ngrid)])],[[0]]))
+    h = np.hstack((np.array([dx for i in range(Ngrid)]),[0]))
     
     P = np.vstack([P for x in range(len(wavelength))]) # extend for wavelength dependent calcaulation
     h = np.vstack([h for x in range(len(wavelength))]) # extend for wavelength dependent calcaulation
@@ -31,7 +31,7 @@ def calR(s,Ngrid,wavelength,dx,epsi,eps0):
     return R
 
 def failreward():
-    Qfac = -1000
+    Qfac = -2500
     MSL = 1
     return (Qfac,MSL)
 
@@ -76,18 +76,18 @@ def reward(Ngrid,wavelength,R,tarwave):
     if done:
         Qfac,MSL = failreward()
         
-    reward = (Qfac/MSL)/10
+    reward = (Qfac/MSL)/3000
     
     return reward
 
 
-def step(s,a):
+def step(s,a,Ngrid):
     
     s1 = np.copy(s)
-
-    if s1[0,a] == 1:
-        s1[0,a] = 0
+    
+    if a < Ngrid:
+        s1[a] = 0
     else:
-        s1[0,a] = 1
+        s1[a-Ngrid] = 1
 
     return s1

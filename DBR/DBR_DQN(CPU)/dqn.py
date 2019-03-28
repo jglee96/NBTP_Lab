@@ -37,7 +37,7 @@ class DQN:
 
         self._build_network()
 
-    def _build_network(self, l_rate=0.0000005) -> None:
+    def _build_network(self, l_rate=0.00000004) -> None:
         """DQN Network architecture (simple MLP)
 
         Args:
@@ -57,6 +57,7 @@ class DQN:
                 #activation function is elu
                 net = tf.layers.dense(net, Hidden_Layer[i], activation=tf.nn.elu, 
                                       kernel_initializer=tf.contrib.layers.variance_scaling_initializer(), bias_initializer=tf.contrib.layers.variance_scaling_initializer())
+                
             net = tf.layers.dense(net, self.output_size,
                                   kernel_initializer=tf.contrib.layers.variance_scaling_initializer(), bias_initializer=tf.contrib.layers.variance_scaling_initializer())
             self._Qpred = net

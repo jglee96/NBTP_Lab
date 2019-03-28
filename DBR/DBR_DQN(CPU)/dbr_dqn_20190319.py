@@ -25,7 +25,7 @@ INPUT_SIZE = Ngrid
 OUTPUT_SIZE = 2*Ngrid
 
 DISCOUNT_RATE = 0.99
-BATCH_SIZE = 32
+BATCH_SIZE = 64
 REPLAY_MEMORY = 100000 # usually use 1e6, ideally infinite
 TARGET_UPDATE_FREQUENCY = 10
 MAX_EPISODES = 500
@@ -186,8 +186,9 @@ def main():
     plt.subplot(2,1,1)
     plt.plot(x,R)
     
+    lx = np.arange(Ngrid)
     plt.subplot(2,1,2)
-    plt.imshow(state,cmap='gray')    
+    plt.bar(lx,state,width=1,color='blue')        
     
     fig2 = plt.gcf()
     plt.show()

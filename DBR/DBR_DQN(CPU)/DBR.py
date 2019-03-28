@@ -31,7 +31,7 @@ def calR(s,Ngrid,wavelength,dx,epsi,eps0):
     return R
 
 def failreward():
-    Qfac = -2500
+    Qfac = -30
     MSL = 1
     return (Qfac,MSL)
 
@@ -76,7 +76,7 @@ def reward(Ngrid,wavelength,R,tarwave):
     if done:
         Qfac,MSL = failreward()
         
-    reward = (Qfac/MSL)/3000
+    reward = (Qfac/MSL)/30
     
     return reward
 

@@ -32,12 +32,12 @@ class DQN:
         self.input_size = input_size
         self.output_size = output_size
         self.net_name = name
-        log_name = './logs/dqn_'+self.net_name+'_'+datetime.now().strftime("%Y%m%d%H%M")
+        log_name = './logs/dqn_mainDQN'+datetime.now().strftime("%Y%m%d%H%M")
         self.writer = tf.summary.FileWriter(log_name)
 
         self._build_network()
 
-    def _build_network(self, l_rate=0.00000004) -> None:
+    def _build_network(self, l_rate=1E-7) -> None:
         """DQN Network architecture (simple MLP)
 
         Args:
@@ -92,6 +92,14 @@ class DQN:
             list: First element is loss, second element is a result from train step
         """
         
+        feed = {
+            self._X: x_stack,
+            self._Y: y_stack
+        }
+        return self.session.run([self._loss, self._train], feed)
+    
+    def updatewTboard(self, x_stack: np.ndarray, y_stack: np.ndarray) -> list:
+        
         self.merged_summary = tf.summary.merge([self._loss_hist])
         
         feed = {
@@ -99,3 +107,6 @@ class DQN:
             self._Y: y_stack
         }
         return self.session.run([self.merged_summary, self._loss, self._train], feed)
+        
+        
+        

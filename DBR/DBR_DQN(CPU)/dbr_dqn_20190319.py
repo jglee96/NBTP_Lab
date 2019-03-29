@@ -27,13 +27,13 @@ OUTPUT_SIZE = 2*Ngrid
 DISCOUNT_RATE = 0.99
 BATCH_SIZE = 64
 REPLAY_MEMORY = 100000 # usually use 1e6, ideally infinite
-TARGET_UPDATE_FREQUENCY = 10
-MAX_EPISODES = 500
+TARGET_UPDATE_FREQUENCY = 100
+MAX_EPISODES = 1000
 
 # Clear our computational graph
 tf.reset_default_graph()
 
-def replay_train(mainDQN: dqn.DQN, targetDQN: dqn.DQN, train_batch: list) -> float:
+def replay_train(mainDQN: dqn.DQN, targetDQN: dqn.DQN, train_batch: list, board: bool) -> float:
     """Trains `mainDQN` with target Q values given by `targetDQN`
 
     Args:
@@ -60,8 +60,11 @@ def replay_train(mainDQN: dqn.DQN, targetDQN: dqn.DQN, train_batch: list) -> flo
     y[np.arange(len(X)), actions] = Q_target
 
     # Train our network using target and predicted Q values on each episode
-    return mainDQN.update(X, y)
-
+    if board:
+        return mainDQN.updatewTboard(X, y)
+    else:
+        return mainDQN.update(X, y)
+    
 def get_copy_var_ops(*, dest_scope_name: str, src_scope_name: str) -> List[tf.Operation]:
     """Creates TF operations that copy weights from `src_scope` to `dest_scope`
 
@@ -97,7 +100,7 @@ def main():
         mainDQN = dqn.DQN(sess, INPUT_SIZE, OUTPUT_SIZE, name="main")
         targetDQN = dqn.DQN(sess, INPUT_SIZE, OUTPUT_SIZE, name="target")
         sess.run(tf.global_variables_initializer()) # Initialize Tensorflow variables
-        mainDQN.writer.add_graph(sess.graph)
+        mainDQN.writer.add_graph(sess.graph)        
 
         # initial copy q_net -> target_net
         copy_ops = get_copy_var_ops(dest_scope_name="target",
@@ -133,8 +136,11 @@ def main():
 
                 if len(replay_buffer) > BATCH_SIZE:
                     minibatch = random.sample(replay_buffer, BATCH_SIZE)
-                    summary, loss, _ = replay_train(mainDQN, targetDQN, minibatch)
-                    mainDQN.writer.add_summary(summary, global_step=episode)
+                    if step_count % (TARGET_UPDATE_FREQUENCY/2) == 0:
+                        summary, loss, _ = replay_train(mainDQN, targetDQN, minibatch, True)
+                        mainDQN.writer.add_summary(summary, global_step=episode)
+                    else:
+                        loss, _ = replay_train(mainDQN, targetDQN, minibatch, False)
 
                 if step_count % TARGET_UPDATE_FREQUENCY == 0:
                     sess.run(copy_ops)

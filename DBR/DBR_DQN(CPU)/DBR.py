@@ -74,9 +74,9 @@ def reward(Ngrid,wavelength,R,tarwave):
             break
     
     if done:
-        Qfac,MSL = failreward()
-        
-    reward = (Qfac/MSL)/30
+        reward = -1
+    else:
+         reward = (pow(Qfac,3)*(1-MSL)**2)/3       
     
     return reward
 

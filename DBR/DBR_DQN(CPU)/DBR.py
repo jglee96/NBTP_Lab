@@ -76,7 +76,7 @@ def reward(Ngrid,wavelength,R,tarwave):
     if done:
         reward = -1
     else:
-         reward = (pow(Qfac,3)*(1-MSL)**2)/3       
+         reward = (pow(Qfac,1/3)*(1-MSL)**2)/3       
     
     return reward
 

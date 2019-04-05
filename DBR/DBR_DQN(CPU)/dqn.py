@@ -37,7 +37,7 @@ class DQN:
 
         self._build_network()
 
-    def _build_network(self, l_rate=1E-9) -> None:
+    def _build_network(self, l_rate=1E-6) -> None:
         """DQN Network architecture (simple MLP)
 
         Args:

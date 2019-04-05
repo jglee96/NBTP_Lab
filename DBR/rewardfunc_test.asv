@@ -1,5 +1,0 @@
-[X,Y] = meshgrid(1:0.1:30,0:0.05:1);
-Z = nX.*(1-Y).^2/5;
-s=surf(X,Y,Z);
-s.EdgeColor = 'none';
-

@@ -31,7 +31,7 @@ import os
 
 
 MODEL_PATH = './model/'
-MODEL_NAME = 'dqn_2019032616.ckpt'
+MODEL_NAME = 'dqn_2019040307.ckpt'
 
 load_path = os.path.join(MODEL_PATH,MODEL_NAME)
 

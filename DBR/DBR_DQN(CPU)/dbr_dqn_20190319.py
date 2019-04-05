@@ -14,9 +14,9 @@ dx = 10
 epsi = 12.25
 eps0 = 1.
 
-minwave = 600
-maxwave = 1000
-wavestep = 5
+minwave = 400
+maxwave = 1200
+wavestep = 10
 wavelength = np.array([np.arange(minwave,maxwave,wavestep)])
 tarwave = 800
 
@@ -28,7 +28,7 @@ DISCOUNT_RATE = 0.99
 BATCH_SIZE = 64
 REPLAY_MEMORY = 100000 # usually use 1e6, ideally infinite
 TARGET_UPDATE_FREQUENCY = 100
-MAX_EPISODES = 1000
+MAX_EPISODES = 5000
 
 # Clear our computational graph
 tf.reset_default_graph()

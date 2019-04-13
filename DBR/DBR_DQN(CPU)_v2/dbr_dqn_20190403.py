@@ -9,7 +9,7 @@ from typing import List
 from datetime import datetime
 
 # Real world environnment
-Ngrid = 150
+Ngrid = 100
 dx = 10
 epsi = 12.25
 eps0 = 1.
@@ -22,15 +22,15 @@ tarwave = 800
 
 # Constants defining our neural network
 INPUT_SIZE = Ngrid
-OUTPUT_SIZE = 2*Ngrid+1 # 1 for Do nothing
+OUTPUT_SIZE = Ngrid+1 # 1 for Do nothing
 
 DISCOUNT_RATE = 0.99
 BATCH_SIZE = 64
 REPLAY_MEMORY = 100000 # usually use 1e6, ideally infinite
-TARGET_UPDATE_FREQUENCY = 50
-MAX_EPISODES = 5000
+TARGET_UPDATE_FREQUENCY = 250
+MAX_EPISODES = 500
 
-SAVE_PATH = './result/result_'+datetime.now().strftime("%Y%m%d%H")+'/'
+SAVE_PATH = './result/'
 
 # Clear our computational graph
 tf.reset_default_graph()
@@ -110,7 +110,7 @@ def main():
         sess.run(copy_ops)
 
         for episode in range(MAX_EPISODES):
-            e = 1. / ((episode / 1000) + 1)
+            e = 1. / ((episode / 100) + 1)
 #            state = np.random.randint(2,size=(1,Ngrid))
 #            state = np.zeros((1,Ngrid))
             state = np.ones(Ngrid)
@@ -118,8 +118,9 @@ def main():
             step_count = 0
             rAll = 0
             done = False
-
-            while not done:
+            
+            N_learn = 501
+            for step_count in range(N_learn):
                 if np.random.rand(1) < e:
                     action = np.random.randint(OUTPUT_SIZE)
                 else:
@@ -149,14 +150,15 @@ def main():
                 rAll += reward
 #                prereward = rawreward
                 state = next_state.copy()
-                step_count += 1
+#                step_count += 1
                 
-                if done or (step_count > Ngrid):
-                    break
-                
+#                if done or (step_count > Ngrid):
+#                    break
+#                
             rList.append(rAll)
             sList.append(step_count)
-            print("Episodes: {}({:.2f}%), steps: {}".format(episode,100*(episode+1)/MAX_EPISODES,step_count))
+#            print("Episodes: {}({:.2f}%), steps: {}".format(episode,100*(episode+1)/MAX_EPISODES,step_count))
+            print("Episodes: {}({:.2f}%)".format(episode,100*(episode+1)/MAX_EPISODES))
         
         # name for saveing neural network model
         save_file = './model/dqn_'+datetime.now().strftime("%Y%m%d%H")+'.ckpt'

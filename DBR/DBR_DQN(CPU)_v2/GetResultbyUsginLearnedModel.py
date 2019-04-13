@@ -13,11 +13,11 @@ import os
 import DBR
 
 MODEL_PATH = './model/'
-MODEL_NAME = 'dqn_2019040307.ckpt'
-META_NAME = 'dqn_2019040307.ckpt.meta'
+MODEL_NAME = 'dqn_2019041100.ckpt'
+META_NAME = 'dqn_2019041100.ckpt.meta'
 
 # Real world environnment
-Ngrid = 150
+Ngrid = 100
 dx = 10
 epsi = 12.25
 eps0 = 1.
@@ -30,7 +30,7 @@ tarwave = 800
 
 # Constants defining our neural network
 INPUT_SIZE = Ngrid
-OUTPUT_SIZE = 2*Ngrid
+OUTPUT_SIZE = Ngrid+1
 
 tf.reset_default_graph()
     
@@ -44,24 +44,24 @@ with tf.Session() as sess:
     X = tf.placeholder(tf.float32, [None, INPUT_SIZE], name="input_x")
     Y = tf.placeholder(tf.float32, shape=[None, OUTPUT_SIZE], name="output_y")
     
-    W0 = tf.get_variable("main/dense/kernel", shape=(Ngrid,2*Ngrid))
-    b0 = tf.get_variable("main/dense/bias", shape=(2*Ngrid))
+    W0 = tf.get_variable("main/dense/kernel", shape=(INPUT_SIZE,OUTPUT_SIZE))
+    b0 = tf.get_variable("main/dense/bias", shape=(OUTPUT_SIZE))
     L0 = tf.nn.elu(tf.matmul(X,W0)+b0)
     
-    W1 = tf.get_variable("main/dense_1/kernel", shape=(2*Ngrid,2*Ngrid))
-    b1 = tf.get_variable("main/dense_1/bias", shape=(2*Ngrid))
+    W1 = tf.get_variable("main/dense_1/kernel", shape=(OUTPUT_SIZE,OUTPUT_SIZE))
+    b1 = tf.get_variable("main/dense_1/bias", shape=(OUTPUT_SIZE))
     L1 = tf.nn.elu(tf.matmul(L0,W1)+b1)
     
-    W2 = tf.get_variable("main/dense_2/kernel", shape=(2*Ngrid,2*Ngrid))
-    b2 = tf.get_variable("main/dense_2/bias", shape=(2*Ngrid))
+    W2 = tf.get_variable("main/dense_2/kernel", shape=(OUTPUT_SIZE,OUTPUT_SIZE))
+    b2 = tf.get_variable("main/dense_2/bias", shape=(OUTPUT_SIZE))
     L2 = tf.nn.elu(tf.matmul(L1,W2)+b2)
     
-    W3 = tf.get_variable("main/dense_3/kernel", shape=(2*Ngrid,2*Ngrid))
-    b3 = tf.get_variable("main/dense_3/bias", shape=(2*Ngrid))
+    W3 = tf.get_variable("main/dense_3/kernel", shape=(OUTPUT_SIZE,OUTPUT_SIZE))
+    b3 = tf.get_variable("main/dense_3/bias", shape=(OUTPUT_SIZE))
     L3 = tf.nn.elu(tf.matmul(L2,W3)+b3)
     
-    W4 = tf.get_variable("main/dense_4/kernel", shape=(2*Ngrid,2*Ngrid))
-    b4 = tf.get_variable("main/dense_4/bias", shape=(2*Ngrid))
+    W4 = tf.get_variable("main/dense_4/kernel", shape=(OUTPUT_SIZE,OUTPUT_SIZE))
+    b4 = tf.get_variable("main/dense_4/bias", shape=(OUTPUT_SIZE))
     L4 = tf.nn.elu(tf.matmul(L3,W4)+b4)
     
     Y = L4
@@ -78,10 +78,14 @@ with tf.Session() as sess:
     max_Qfac = 0
     maxR = []
     state = np.ones(Ngrid)
+#    state = np.random.randint(2, size=Ngrid)
         
-    for iteridx in range(Ngrid):
+    N = 10000    
+    for iteridx in range(N):
+        e = 1. / ((iteridx / 100) + 1)
         R = DBR.calR(state,Ngrid,wavelength,dx,epsi,eps0)
         Qfac = DBR.calQfac(R,wavelength,tarwave)
+        rawreward = DBR.reward(Ngrid,wavelength,R,tarwave)
             
         # Save maximum Q factor case
         if Qfac > max_Qfac:
@@ -90,11 +94,17 @@ with tf.Session() as sess:
             maxR = R.copy()
             
 #            action = sess.run(output_y, feed_dict={input_x: state})
-        feed_state = np.reshape(state, [-1,INPUT_SIZE])
-        action = sess.run(Y, feed_dict={X: feed_state})
-        aidx = action.argmax()            
-        state = DBR.step(state,aidx,Ngrid)
-        print("Iternation: {}({:.2f}%), MAX Q fac.: {:.2f}".format(iteridx,100*(iteridx+1)/Ngrid,max_Qfac))
+        
+        if np.random.rand(1) < e:
+            aidx = np.random.randint(OUTPUT_SIZE)
+        else:
+            # Choose an action by greedily from the Q-network
+            feed_state = np.reshape(state, [-1,INPUT_SIZE])
+            action = sess.run(Y, feed_dict={X: feed_state})
+            aidx = action.argmax()            
+                
+        state, _ = DBR.step(state,aidx,Ngrid)
+        print("Iternation: {}({:.2f}%), MAX Q fac.: {:.2f}, aidx: {}, reward: {:.2f}".format(iteridx,100*(iteridx+1)/N,max_Qfac,aidx,rawreward))
     
     print("*****Selected Optimized model*****")
     print("Q factor = {:.2f}".format(max_Qfac))
@@ -104,8 +114,9 @@ with tf.Session() as sess:
     plt.subplot(2,1,1)
     plt.plot(x,maxR)
     
+    lx = np.arange(Ngrid)
     plt.subplot(2,1,2)
-    plt.plot(max_state)    
+    plt.bar(lx,max_state,width=1,color='blue')         
     
     fig2 = plt.gcf()
     plt.show()

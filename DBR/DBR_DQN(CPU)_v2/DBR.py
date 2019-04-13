@@ -68,7 +68,7 @@ def reward(Ngrid,wavelength,R,tarwave):
         if (tarhi) and (tarlo):
             tarhi = tarhi[0]
             tarlo = tarlo[0]
-            Qfac = (1/i)*tarint*(1/wavelength[0,taridx])/(1/wavelength[0,tarlo]-1/wavelength[0,tarhi])
+            Qfac = (1-i)*tarint*(1/wavelength[0,taridx])/(1/wavelength[0,tarlo]-1/wavelength[0,tarhi])
             MSL = np.mean(np.hstack((R[0:tarlo+1],R[tarhi:])))
             done = False
             break
@@ -76,7 +76,7 @@ def reward(Ngrid,wavelength,R,tarwave):
     if done:
         reward = -1
     else:
-         reward = (pow(Qfac,1/3)*(1-MSL))/3       
+         reward = (pow(Qfac,1/3)*(1-MSL))*5     
     
     return reward
 
@@ -86,12 +86,8 @@ def step(s,a,Ngrid):
     s1 = np.copy(s)
     done = False
     
-    if a < Ngrid:
-        s1[a] = 0
-    elif a == 2*Ngrid:
-        done = True
+    if a == Ngrid:
         return (s1,done)
     else:
-        s1[a-Ngrid] = 1
-
-    return (s1,done)
+        s1[a] = int(not s1[a])
+        return (s1,done)

@@ -11,8 +11,8 @@ def beepsound():
     ws.Beep(freq,dur)
 
 for i in range(10):
-    sname = statefilename + '_'+i
-    Rname = Rfilename + '_' + i
+    sname = statefilename + '_' + i + '.txt'
+    Rname = Rfilename + '_' + i + '.txt'
 
     for n in range(Nsample):
         state = np.random.randint(2,size=Ngrid)

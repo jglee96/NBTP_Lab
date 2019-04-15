@@ -23,11 +23,12 @@ INPUT_SIZE = Ngrid
 OUTPUT_SIZE = len(wavelength[0])
 
 Nsample = 50000
-l_rate = 1E-4
+l_rate = 1E-5
 
 SAVE_PATH = './result/'
 
 # train set file name
+FPATH = 'D:/NBTP_Lab/DBR/DBR_DNN'
 statefilename = '/trainset/state_trainset01'
 Rfilename = '/trainset/R_trainset01'
 
@@ -69,8 +70,8 @@ def main():
         net.writer.add_graph(sess.graph)   
         sess.run(tf.global_variables_initializer()) # Initialize Tensorflow variables
 
-        sX = np.loadtxt(statefilename+'.txt').reshape(-1,INPUT_SIZE)
-        sY = np.loadtxt(Rfilename+'.txt').reshape(-1,OUTPUT_SIZE)
+        sX = np.loadtxt(FPATH+statefilename+'.txt').reshape(-1,INPUT_SIZE)
+        sY = np.loadtxt(FPATH+Rfilename+'.txt').reshape(-1,OUTPUT_SIZE)
 
         for n in range(Nsample):
             feed = {X: np.reshape(sX[n],[-1,INPUT_SIZE]), Y: np.reshape(sY[n],[-1,OUTPUT_SIZE])}

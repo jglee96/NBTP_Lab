@@ -11,7 +11,7 @@ def beepsound():
     dur = 1000
     ws.Beep(freq,dur)
 
-FPATH = os.getcwd()
+FPATH = 'D:/NBTP_Lab/DBR/DBR_DNN'
 
 for i in range(10):
     sname = FPATH + statefilename + '_' + str(i) + '.txt'

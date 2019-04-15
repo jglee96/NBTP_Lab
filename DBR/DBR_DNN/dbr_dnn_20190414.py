@@ -28,8 +28,8 @@ l_rate = 1E-4
 SAVE_PATH = './result/'
 
 # train set file name
-statefilename = './trainset/state_trainset01'
-Rfilename = './trainset/R_trainset01'
+statefilename = '/trainset/state_trainset01'
+Rfilename = '/trainset/R_trainset01'
 
 # Clear our computational graph
 tf.reset_default_graph()
@@ -42,7 +42,7 @@ def beepsound():
 def main():
     with tf.Session() as sess:
         # hiddenlayer's number and length
-        Hidden_Layer = np.array([round(3*OUTPUT_SIZE),round(5*OUTPUT_SIZE),round(5*OUTPUT_SIZE),round(3*OUTPUT_SIZE)])
+        Hidden_Layer = np.array([round(10*OUTPUT_SIZE),round(10*OUTPUT_SIZE),round(10*OUTPUT_SIZE)])
         num_layer = Hidden_Layer.shape[0]
         
         X = tf.placeholder(tf.float32, [None, INPUT_SIZE], name="input_x")
@@ -61,7 +61,7 @@ def main():
         loss_hist = tf.summary.scalar('loss', loss)
 
         optimizer = tf.train.AdamOptimizer(learning_rate=l_rate)
-        train = optimizer.minimize(loss)
+        train = optimizer.minimize(100*loss)
 
         log_name = './logs/'+datetime.now().strftime("%Y%m%d%H%M")
         net.writer = tf.summary.FileWriter(log_name)
@@ -87,6 +87,7 @@ def main():
         TR = DBR.calR(Tstate,Ngrid,wavelength,dx,epsi,eps0)
         NR = sess.run(Rpred, feed_dict={X: np.reshape(Tstate,[-1,INPUT_SIZE])})
         NR = np.reshape(NR,[OUTPUT_SIZE,-1])
+        print(beepsound())
 
         x = np.reshape(wavelength,wavelength.shape[1])
         plt.figure(2)
@@ -100,8 +101,6 @@ def main():
         plt.show()
         fig2_name = SAVE_PATH+datetime.now().strftime("%Y%m%d%H")+'_result model.png'
         fig2.savefig(fig2_name)
-        print(beepsound())
-
 
 if __name__ == "__main__":
     main()

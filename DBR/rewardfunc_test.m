@@ -2,6 +2,8 @@
 Z1 = (nthroot(X,3).*(1-Y))/3;
 % Z1 = ((X.^3).*(1-Y).^2)/3;
 % Z2 = X./(600*Y);
+[X3,Y3] = meshgrid(0:0.01:1,0:0.01:1);
+Z3 = X3./Y3;
 % s=surf(Z);
 % s.EdgeColor='none';
 % hold on;
@@ -22,4 +24,13 @@ colorbar;
 % % yticks(0:0.25:1)
 % colormap jet;
 % colorbar;
+
+figure(3)
+contourf(X3,Y3,Z3);
+xlabel('Inside Range Average')
+ylabel('Outside Range Average')
+% xticks(0:5:30)
+% yticks(0:0.25:1)
+colormap jet;
+colorbar;
 

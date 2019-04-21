@@ -34,7 +34,7 @@ Rfilename = '/trainset/R_trainset02'
 
 # Batch Noramlized Fully Connected Network
 def dense_batch_relu(x, phase):
-        h1 = tf.contrib.layers.fully_connected(x, 20*OUTPUT_SIZE, activation_fn=None)
+        h1 = tf.contrib.layers.fully_connected(x, 16*OUTPUT_SIZE, activation_fn=None)
         h2 = tf.contrib.layers.batch_norm(h1, center=True, scale=True, is_training=phase)
         
         return tf.nn.relu(h2)
@@ -57,8 +57,7 @@ def main():
             # net = tf.layers.dense(net, Hidden_Layer[i], activation=tf.nn.relu, kernel_initializer=tf.contrib.layers.variance_scaling_initializer(), bias_initializer=tf.contrib.layers.variance_scaling_initializer())
             net = dense_batch_relu(net,Phase)
 
-        net = tf.layers.dense(net, OUTPUT_SIZE, activation=tf.nn.relu, kernel_initializer=tf.contrib.layers.xavier_initializer(), bias_initializer=tf.contrib.layers.xavier_initializer()) 
-        Rpred = net
+        Rpred = tf.layers.dense(net, OUTPUT_SIZE, activation=tf.nn.relu, kernel_initializer=tf.contrib.layers.xavier_initializer(), bias_initializer=tf.contrib.layers.xavier_initializer())
 
         Y = tf.placeholder(tf.float32, shape=[None, OUTPUT_SIZE], name="output_y")
         loss = tf.losses.mean_squared_error(Y, Rpred)

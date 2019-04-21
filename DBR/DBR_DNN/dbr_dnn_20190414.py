@@ -22,15 +22,15 @@ tarwave = 800
 INPUT_SIZE = Ngrid
 OUTPUT_SIZE = len(wavelength[0])
 
-Nsample = 50000
+Nsample = 10000
 l_rate = 1E-5
 
 SAVE_PATH = './result/'
 
 # train set file name
 FPATH = 'D:/NBTP_Lab/DBR/DBR_DNN'
-statefilename = '/trainset/state_trainset01'
-Rfilename = '/trainset/R_trainset01'
+statefilename = '/trainset/state_trainset02'
+Rfilename = '/trainset/R_trainset02'
 
 # Clear our computational graph
 tf.reset_default_graph()

@@ -25,7 +25,7 @@ OUTPUT_SIZE = len(wavelength[0])
 
 Nfile = 8
 Nsample = 10000
-l_rate = 1E-5
+l_rate = 1E-3
 
 # train set file name
 FPATH = 'D:/NBTP_Lab/DBR/DBR_DNN_slice'
@@ -46,14 +46,6 @@ def Batch_Normalization(x, training, scope):
                         lambda : batch_norm(inputs=x, is_training=training, reuse=None),
                         lambda : batch_norm(inputs=x, is_training=training, reuse=True))
 
-# Batch Noramlized Fully Connected Network
-def dense_batch_relu(x, phase, scope):
-        h1 = tf.contrib.layers.fully_connected(x, 16*OUTPUT_SIZE, activation_fn=None)
-        # h2 = tf.contrib.layers.batch_norm(h1, is_training=phase)
-        h2 = Batch_Normalization(h1, phase, scope)
-        
-        return tf.nn.relu(h2)
-
 # Clear our computational graph
 tf.reset_default_graph()
 
@@ -72,7 +64,7 @@ def main():
         with tf.name_scope(layer_name):
             #activation function is relu
             # net = tf.layers.dense(net, Hidden_Layer[i], activation=tf.nn.relu, kernel_initializer=tf.contrib.layers.variance_scaling_initializer(), bias_initializer=tf.contrib.layers.variance_scaling_initializer())
-            net = dense_batch_relu(net, phase=Phase, scope = layer_name)
+            net = tf.contrib.layers.fully_connected(net, 250, activation_fn=tf.nn.relu, scope=layer_name)
 
     net = tf.layers.dense(net, OUTPUT_SIZE, activation=tf.nn.relu, kernel_initializer=tf.contrib.layers.xavier_initializer(), bias_initializer=tf.contrib.layers.xavier_initializer())
     Rpred = net
@@ -126,10 +118,10 @@ def main():
             else:
                 sess.run(train, feed_dict=feed) 
         #test
-        # Tstate = np.random.randint(int(0.5*tarwave),size=Nslice)
-        Tstate = sX[0]
-        # TR = sliceDBR.calR(Tstate,Nslice,wavelength,epsi,eps0,True)
-        TR = sY[0]
+        Tstate = np.random.randint(int(0.5*tarwave),size=Nslice)
+        # Tstate = sX[0]
+        TR = sliceDBR.calR(Tstate,Nslice,wavelength,epsi,eps0,True)
+        # TR = sY[0]
         NR, Tloss = sess.run([Rpred,loss],feed_dict={X: np.reshape(Tstate,[-1,INPUT_SIZE]),
                                                     Y: np.reshape(TR,[-1,OUTPUT_SIZE]),
                                                     Phase: False})

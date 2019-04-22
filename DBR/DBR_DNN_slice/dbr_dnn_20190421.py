@@ -3,8 +3,10 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 import random
 import sliceDBR
-import winsound as ws
+import pandas as pd
 from datetime import datetime
+from tensorflow.contrib.layers import batch_norm
+from tensorflow.contrib.framework import arg_scope
 
 # Real world environnment
 Nslice = 7
@@ -25,17 +27,30 @@ Nfile = 8
 Nsample = 10000
 l_rate = 1E-5
 
-SAVE_PATH = './result/'
-
 # train set file name
 FPATH = 'D:/NBTP_Lab/DBR/DBR_DNN_slice'
+SAVE_PATH = FPATH +'/result/'
 statefilename = '/trainset/state_trainset02'
 Rfilename = '/trainset/R_trainset02'
 
+# Batch Normalization function
+def Batch_Normalization(x, training, scope):
+    with arg_scope([batch_norm],
+                    scope=scope,
+                    updates_collections=None,
+                    decay=0.9,
+                    center=True,
+                    scale=True,
+                    zero_debias_moving_mean=True) :
+        return tf.cond(training,
+                        lambda : batch_norm(inputs=x, is_training=training, reuse=None),
+                        lambda : batch_norm(inputs=x, is_training=training, reuse=True))
+
 # Batch Noramlized Fully Connected Network
-def dense_batch_relu(x, phase):
+def dense_batch_relu(x, phase, scope):
         h1 = tf.contrib.layers.fully_connected(x, 16*OUTPUT_SIZE, activation_fn=None)
-        h2 = tf.contrib.layers.batch_norm(h1, center=True, scale=True, is_training=phase)
+        # h2 = tf.contrib.layers.batch_norm(h1, is_training=phase)
+        h2 = Batch_Normalization(h1, phase, scope)
         
         return tf.nn.relu(h2)
 
@@ -43,32 +58,36 @@ def dense_batch_relu(x, phase):
 tf.reset_default_graph()
 
 def main():
-    with tf.Session() as sess:
-        # hiddenlayer's number and length
-        num_layer = 4
-        Phase = tf.placeholder(tf.bool)
-        
-        X = tf.placeholder(tf.float32, [None, INPUT_SIZE], name="input_x")
-        net = tf.contrib.layers.batch_norm(X, center=True, scale=True, is_training=Phase)
-                
-        # more hidden layer not one
-        for i in range(num_layer):
+    # hiddenlayer's number and length
+    num_layer = 4
+    Phase = tf.placeholder(tf.bool)
+    
+    X = tf.placeholder(tf.float32, [None, INPUT_SIZE], name="input_x")
+    # net = tf.contrib.layers.batch_norm(X, is_training=Phase)
+    net = Batch_Normalization(X, training=Phase, scope='Input_X')
+            
+    # more hidden layer not one
+    for i in range(num_layer):
+        layer_name = 'FC'+str(i)
+        with tf.name_scope(layer_name):
             #activation function is relu
             # net = tf.layers.dense(net, Hidden_Layer[i], activation=tf.nn.relu, kernel_initializer=tf.contrib.layers.variance_scaling_initializer(), bias_initializer=tf.contrib.layers.variance_scaling_initializer())
-            net = dense_batch_relu(net,Phase)
+            net = dense_batch_relu(net, phase=Phase, scope = layer_name)
 
-        Rpred = tf.layers.dense(net, OUTPUT_SIZE, activation=tf.nn.relu, kernel_initializer=tf.contrib.layers.xavier_initializer(), bias_initializer=tf.contrib.layers.xavier_initializer())
+    net = tf.layers.dense(net, OUTPUT_SIZE, activation=tf.nn.relu, kernel_initializer=tf.contrib.layers.xavier_initializer(), bias_initializer=tf.contrib.layers.xavier_initializer())
+    Rpred = net
 
-        Y = tf.placeholder(tf.float32, shape=[None, OUTPUT_SIZE], name="output_y")
-        loss = tf.losses.mean_squared_error(Y, Rpred)
-        loss_hist = tf.summary.scalar('loss', loss)
+    Y = tf.placeholder(tf.float32, shape=[None, OUTPUT_SIZE], name="output_y")
+    loss = tf.losses.mean_squared_error(Y, Rpred)
+    loss_hist = tf.summary.scalar('loss', loss)
 
-        optimizer = tf.train.AdamOptimizer(learning_rate=l_rate)
-        train = optimizer.minimize(loss)
+    optimizer = tf.train.AdamOptimizer(learning_rate=l_rate)
+    train = optimizer.minimize(loss)
 
-        log_name = './logs/'+datetime.now().strftime("%Y%m%d%H%M")
-        net.writer = tf.summary.FileWriter(log_name)
-        
+    log_name = FPATH+'/logs/'+datetime.now().strftime("%Y%m%d%H%M")
+    net.writer = tf.summary.FileWriter(log_name)
+
+    with tf.Session() as sess:        
         net.writer.add_graph(sess.graph)   
         sess.run(tf.global_variables_initializer()) # Initialize Tensorflow variables
 
@@ -77,11 +96,15 @@ def main():
         Yarray = []
         for nf in range(Nfile):
             Xfname = FPATH+statefilename+'_'+str(nf)+'.txt'
-            Xtemp = np.loadtxt(Xfname)
+            # Xtemp = np.loadtxt(Xfname)
+            Xtemp = pd.read_csv(Xfname, names=['a'])
+            Xtemp = Xtemp.values
             Xarray.append(Xtemp)
 
             Yfname = FPATH+Rfilename+'_'+str(nf)+'.txt'
-            Ytemp = np.loadtxt(Yfname)
+            # Ytemp = np.loadtxt(Yfname)
+            Ytemp = pd.read_csv(Yfname, names=['a'])
+            Ytemp = Ytemp.values
             Yarray.append(Ytemp)
         
         Xcon = np.concatenate(Xarray)
@@ -90,23 +113,26 @@ def main():
         sX = Xcon.reshape(-1,INPUT_SIZE)
         sY = Ycon.reshape(-1,OUTPUT_SIZE)
 
-        batch_size = 64
+        batch_size = 32
         for n in range(int(Nsample*Nfile/batch_size)):
             feed = {X: np.reshape(sX[n*batch_size:(n+1)*batch_size],[batch_size,INPUT_SIZE]),
                     Y: np.reshape(sY[n*batch_size:(n+1)*batch_size],[batch_size,OUTPUT_SIZE]),
                     Phase: True}
-            sess.run(train, feed_dict=feed)
-
             if (n+1)%100 == 0:
                 merged_summary = tf.summary.merge([loss_hist])
-                summary = sess.run(merged_summary, feed_dict=feed)
+                _, summary = sess.run([train, merged_summary], feed_dict=feed)
                 net.writer.add_summary(summary, global_step=n)
                 print(n+1,'th trained')
-
+            else:
+                sess.run(train, feed_dict=feed) 
         #test
-        Tstate = np.random.randint(int(0.5*tarwave),size=Nslice)
-        TR = sliceDBR.calR(Tstate,Nslice,wavelength,epsi,eps0,True)
-        NR, Tloss = sess.run([Rpred, loss], feed_dict={X: np.reshape(Tstate,[-1,INPUT_SIZE]),Y: np.reshape(TR,[-1,OUTPUT_SIZE]), Phase: False})
+        # Tstate = np.random.randint(int(0.5*tarwave),size=Nslice)
+        Tstate = sX[0]
+        # TR = sliceDBR.calR(Tstate,Nslice,wavelength,epsi,eps0,True)
+        TR = sY[0]
+        NR, Tloss = sess.run([Rpred,loss],feed_dict={X: np.reshape(Tstate,[-1,INPUT_SIZE]),
+                                                    Y: np.reshape(TR,[-1,OUTPUT_SIZE]),
+                                                    Phase: False})
         NR = np.reshape(NR,[OUTPUT_SIZE,-1])
 
         print('LOSS: ', Tloss)

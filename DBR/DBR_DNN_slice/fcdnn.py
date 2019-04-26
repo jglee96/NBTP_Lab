@@ -1,4 +1,5 @@
 import tensorflow as tf
+from datetime import datetime
 from tensorflow.contrib.layers import batch_norm
 from tensorflow.contrib.framework import arg_scope
 
@@ -11,7 +12,8 @@ class FC_DNN:
                 self.input_size = input_size
                 self.output_size = output_size
                 self.net_name = name
-                log_name = FPATH+'/logs/InputBN_{}_{}_{}_{:.5f}'.format(batch_size, num_layer, num_neuron, learning_rate)
+                # log_name = FPATH+'/logs/TMM/TMM_{}_{}_{}_{:.5f}'.format(batch_size, num_layer, num_neuron, learning_rate)
+                log_name = FPATH+'/logs/'+datetime.now().strftime("%Y%m%d%H%M")
                 self.writer = tf.summary.FileWriter(log_name)
                 self._build_network(batch_size,num_layer,num_neuron, learning_rate)   
 
@@ -20,14 +22,15 @@ class FC_DNN:
                 self.Phase = tf.placeholder(tf.bool)
 
                 self.X = tf.placeholder(tf.float32, [None, self.input_size], name="input_x")
-                net = self.Batch_Normalization(x=self.X, training=self.Phase, scope='Input_X')
+                # net = self.Batch_Normalization(x=self.X, training=self.Phase, scope='Input_X')
+                net = self.X
                         
                 # more hidden layer not one
                 for i in range(num_layer):
                         layer_name = 'FC'+str(i)
                         with tf.name_scope(layer_name):
                                 #activation function is relu
-                                net = tf.contrib.layers.fully_connected(net, num_neuron, activation_fn=tf.nn.elu, scope=layer_name)
+                                net = tf.contrib.layers.fully_connected(net, num_neuron, activation_fn=tf.nn.relu, scope=layer_name)
 
                 net = tf.contrib.layers.fully_connected(net, self.output_size, activation_fn=tf.nn.relu)
                 self.Rpred = net
@@ -79,3 +82,12 @@ class FC_DNN:
                         self.Phase: phase
                 }
                 return self.session.run(self.merged_summary, feed)
+        
+        def Test_paly(self, x_stack, y_stack, phase: bool):
+
+                feed = {
+                        self.X: x_stack,
+                        self.Y: y_stack,
+                        self.Phase: phase
+                }
+                return self.session.run(self.Rpred, feed)

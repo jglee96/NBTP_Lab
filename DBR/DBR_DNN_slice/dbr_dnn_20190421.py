@@ -79,10 +79,10 @@ def main():
     # num_neuron = [100, 150, 200, 250]
     # learning_rate = [1E-2, 1E-3, 1E-4]
     # 32, 10, 250, 1E-3 is best hyperparameter
-    batch_size = [32]
-    num_layer = [8]
-    num_neuron = [1000]
-    learning_rate = [1E-4]
+    batch_size = [100]
+    num_layer = [5]
+    num_neuron = [200]
+    learning_rate = [1E-2]
 
     nfigure = 0
     for bs in batch_size:
@@ -107,15 +107,18 @@ def main():
                                 print(n+1,'th trained')
                         #Test
                         print("Testing Model...")
-                        Tstate = np.random.randint(int(0.5*tarwave),size=Nslice)
+                        lbound = (tarwave/(4*nh))*0.5
+                        hbound = (tarwave/(4*nl))*1.5
+                        print('lbound: {}, hbound: {}'.format(lbound, hbound))
+                        Tstate = np.random.randint(low=int(lbound),high=int(hbound),size=Nslice,dtype=int)
                         # Tstate = np.ones(Nslice)
-                        # Tstate = np.array([int(tarwave/(4*np.sqrt(epsi))),
-                        #                     int(tarwave/4),
-                        #                     int(tarwave/(4*np.sqrt(epsi))),
-                        #                     int(tarwave/4),
-                        #                     int(tarwave/(4*np.sqrt(epsi))),
-                        #                     int(tarwave/4),
-                        #                     int(tarwave/(4*np.sqrt(epsi)))])
+                        # Tstate = np.array([int(tarwave/(4*nh)),
+                        #                     int(tarwave/(4*nl)),
+                        #                     int(tarwave/(4*nh)),
+                        #                     int(tarwave/(4*nl)),
+                        #                     int(tarwave/(4*nh)),
+                        #                     int(tarwave/(4*nl)),
+                        #                     int(tarwave/(4*nh))])
                         TR = sliceDBR.calR(Tstate,Nslice,wavelength,nh,nl,True)
                         X = np.reshape(Tstate,[-1,INPUT_SIZE])
                         Y = np.reshape(TR,[-1,OUTPUT_SIZE])
@@ -146,6 +149,7 @@ def main():
                         # plt.plot(range(len(loss_List)), loss_List)
                         # fig2 = plt.gcf()
                         # fig2_name = SAVE_PATH+'/TMM/TMM_{}_{}_{}_{:.5f}'.format(bs, nl, nn, lr)+'_loss.png'
+                        # fig2_name = SAVE_PATH+'/'+datetime.now().strftime("%Y%m%d%H%M")
                         # fig2.savefig(fig2_name)
 
                         # f = open(FPATH+'/Loss Test(20190425157).txt', 'a')

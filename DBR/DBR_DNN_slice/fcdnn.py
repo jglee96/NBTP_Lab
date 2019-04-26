@@ -22,8 +22,8 @@ class FC_DNN:
                 self.Phase = tf.placeholder(tf.bool)
 
                 self.X = tf.placeholder(tf.float32, [None, self.input_size], name="input_x")
-                # net = self.Batch_Normalization(x=self.X, training=self.Phase, scope='Input_X')
-                net = self.X
+                net = self.Batch_Normalization(x=self.X, training=self.Phase, scope='BN_input')
+                # net = self.X
                         
                 # more hidden layer not one
                 for i in range(num_layer):
@@ -36,7 +36,10 @@ class FC_DNN:
                 self.Rpred = net
 
                 self.Y = tf.placeholder(tf.float32, shape=[None, self.output_size], name="output_y")
-                self.loss = tf.losses.mean_squared_error(self.Y, self.Rpred)
+                # self.loss = tf.losses.mean_squared_error(self.Y, self.Rpred)
+                # self.loss = tf.reduce_mean(tf.square(self.Y-self.Rpred))
+                self.loss = tf.reduce_sum(tf.square(self.Y-self.Rpred))
+                # self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=self.Y, logits=self.Rpred))
                 self.loss_hist = tf.summary.scalar('loss', self.loss)
 
                 optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
@@ -54,7 +57,7 @@ class FC_DNN:
                         return tf.cond(training,
                                 lambda : batch_norm(inputs=x, is_training=training, reuse=None),
                                 lambda : batch_norm(inputs=x, is_training=training, reuse=True))
-        def update_train(self, x_stack, y_stack, phase: bool):
+        def update_train(self, x_stack, y_stack, phase):
         
                 feed = {
                         self.X: x_stack,
@@ -63,7 +66,7 @@ class FC_DNN:
                 }
                 return self.session.run(self.train, feed)
     
-        def update_loss(self, x_stack, y_stack, phase: bool):
+        def update_loss(self, x_stack, y_stack, phase):
         
                 feed = {
                         self.X: x_stack,
@@ -72,7 +75,7 @@ class FC_DNN:
                 }       
                 return self.session.run(self.loss, feed)
     
-        def update_tensorboard(self, x_stack, y_stack, phase: bool):
+        def update_tensorboard(self, x_stack, y_stack, phase):
         
                 self.merged_summary = tf.summary.merge([self.loss_hist])
         
@@ -83,7 +86,7 @@ class FC_DNN:
                 }
                 return self.session.run(self.merged_summary, feed)
         
-        def Test_paly(self, x_stack, y_stack, phase: bool):
+        def Test_paly(self, x_stack, y_stack, phase):
 
                 feed = {
                         self.X: x_stack,

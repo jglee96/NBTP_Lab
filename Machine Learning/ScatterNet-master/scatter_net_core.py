@@ -22,7 +22,7 @@ def init_bias(shape, stddev=.1):
     return tf.Variable(biases)
 
 def save_weights(weights,biases,output_folder,weight_name_save,num_layers):
-    for i in xrange(0, num_layers+1):
+    for i in range(0, num_layers+1):
         weight_i = weights[i].eval()
         np.savetxt(output_folder+weight_name_save+"/w_"+str(i)+".txt",weight_i,delimiter=',')
         bias_i = biases[i].eval()
@@ -32,7 +32,7 @@ def save_weights(weights,biases,output_folder,weight_name_save,num_layers):
 def load_weights(output_folder,weight_load_name,num_layers):
     weights = []
     biases = []
-    for i in xrange(0, num_layers+1):
+    for i in range(0, num_layers+1):
         weight_i = np.loadtxt(output_folder+weight_load_name+"/w_"+str(i)+".txt",delimiter=',')
         w_i = tf.Variable(weight_i,dtype=tf.float32)
         weights.append(w_i)
@@ -46,7 +46,7 @@ def forwardprop(X, weights, biases, num_layers, dropout=False, minLimit=None, ma
         X = tf.maximum(X, minLimit)
         X = tf.minimum(X, maxLimit)
     htemp = None
-    for i in xrange(0, num_layers):
+    for i in range(0, num_layers):
         if i ==0:
             htemp = tf.nn.relu(tf.add(tf.matmul(X, weights[i]), biases[i]))
         else:

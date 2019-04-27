@@ -45,7 +45,7 @@ def gen_data_first(data,test_file,data_folder=None):
     train_X = np.genfromtxt(x_file, delimiter=',')
     train_Y = np.array([np.genfromtxt(y_file, delimiter=',')])
     train_train_X = np.genfromtxt(data+"_val.csv",delimiter=',')
-    print train_train_X.all()
+    print(train_train_X.all())
     max_val = np.amax(train_train_X)
     min_val = np.amin(train_train_X)
     return train_X, train_Y , max_val, min_val
@@ -53,7 +53,7 @@ def gen_data_first(data,test_file,data_folder=None):
 # This designs a spectrum. 
 def design_spectrum(data,reuse_weights,output_folder,weight_name_save,weight_name_load,n_batch,numEpochs,lr_rate,lr_decay,num_layers,n_hidden,percent_val,patienceLimit,compare,sample_val,spect_to_sample,matchSpectrum,match_test_file,designSpectrum,design_test_file):
     print(num_layers)
-    train_X, train_Y, max_val, min_val = gen_data_first(data,design_test_file)
+    train_X, train_Y, _, _ = gen_data_first(data,design_test_file)
     spec_file_name = output_folder + "/spec_file_0" + ".txt"
     data = np.loadtxt(spec_file_name, delimiter=",")
     x_mean = data[0, :]
@@ -86,7 +86,7 @@ def design_spectrum(data,reuse_weights,output_folder,weight_name_save,weight_nam
     global_step = tf.Variable(0, trainable=False)
 
     learning_rate = tf.train.exponential_decay(lr_rate,global_step,1000,lr_decay, staircase=False)
-    optimizer = tf.train.RMSPropOptimizer(learning_rate=lr_rate).minimize(cost, global_step=global_step, var_list=[X])
+    optimizer = tf.train.RMSPropOptimizer(learning_rate=learning_rate).minimize(cost, global_step=global_step, var_list=[X])
 
     # Run SGD
     with tf.Session() as sess:
@@ -109,13 +109,13 @@ def design_spectrum(data,reuse_weights,output_folder,weight_name_save,weight_nam
             print("Step: " + str(step) + " : Loss: " + str(cum_loss) + " : " + str(X.eval()))
             cost_file.flush()
             cum_loss = 0
-    print "========Iterations completed in : " + str(time.time()-start_time) + " ========"
+    print("========Iterations completed in : " + str(time.time()-start_time) + " ========")
     sess.close()
 
 # This matches a spectrum.
 def match_spectrum(data,reuse_weights,output_folder,weight_name_save,weight_name_load,n_batch,numEpochs,lr_rate,lr_decay,num_layers,n_hidden,percent_val,patienceLimit,compare,sample_val,spect_to_sample,matchSpectrum,match_test_file,designSpectrum,design_test_file):
     # Change made on 08/16. Switching to gen_data_first. 
-    train_X, train_Y, max_val, min_val = gen_data_first(data,design_test_file)
+    train_X, train_Y, _, _ = gen_data_first(data,design_test_file)
     #train_X, train_Y , test_X, test_Y, val_X, val_Y , x_mean, x_std = get_data(match_test_file,percentTest=0)
     print("Train x shape is: " , train_X.shape)
     x_size = train_X.shape[1]   # Number of input nodes: 4 features and 1 bias
@@ -150,7 +150,7 @@ def match_spectrum(data,reuse_weights,output_folder,weight_name_save,weight_name
                 cum_loss += sess.run(cost,feed_dict={y:train_Y})
                 step += 1
                 cost_file.write(str(float(cum_loss))+str("\n"))
-                myvals0 = sess.run(yhat,feed_dict={y:train_Y})
+                # myvals0 = sess.run(yhat,feed_dict={y:train_Y})
                 print("Step: " + str(step) + " : Loss: " + str(cum_loss) + " : " + str(X.eval()))
                 if abs(cum_loss-prev_losses) < .00001:
                     print("Converged once")
@@ -159,8 +159,8 @@ def match_spectrum(data,reuse_weights,output_folder,weight_name_save,weight_name
                 cum_loss = 0
         if cum_loss < 0.1:
             succes += 1
-            print succes
-    print "Final: " , succes
+            print(succes)
+    print("Final: " , succes)
     pass
 
 
@@ -210,7 +210,7 @@ def main(data,reuse_weights,output_folder,weight_name_save,weight_name_load,n_ba
     if reuse_weights:
         (weights, biases) = load_weights(output_folder,weight_name_load,num_layers)
     else:
-        for i in xrange(0,num_layers):
+        for i in range(0,num_layers):
             if i ==0:
                 weights.append(init_weights((x_size,n_hidden)))
             else:
@@ -235,7 +235,11 @@ def main(data,reuse_weights,output_folder,weight_name_save,weight_name_load,n_ba
     optimizer = tf.train.RMSPropOptimizer(learning_rate=learning_rate).minimize(cost,global_step=global_step)
 
     #Now do the training. 
-    step =0; curEpoch =0; cum_loss =0; perinc = 0;
+    step =0
+    curEpoch =0
+    cum_loss =0
+    perinc = 0
+    patience = 0
     lowVal = 1000000.0 #Just make this some high number. 
 
     start_time=time.time()
@@ -296,7 +300,7 @@ def main(data,reuse_weights,output_folder,weight_name_save,weight_name_load,n_ba
         test_loss_file.write(str(finalLoss) + "," + str(finalPer))
         test_loss_file.flush()
 
-    print "========Iterations completed in : " + str(time.time()-start_time) + " ========"
+    print("========Iterations completed in : " + str(time.time()-start_time) + " ========")
     sess.close()
 
 if __name__=="__main__":
@@ -308,7 +312,7 @@ if __name__=="__main__":
     parser.add_argument("--weight_name_load",type=str,default="")#This would be something that goes infront of w_1.txt. This would be used in saving the weights. In most cases, just leave this as is, it will naturally take care of it. 
     parser.add_argument("--weight_name_save",type=str,default="") #Similiar to above, but for saving now. 
     parser.add_argument("--n_batch",type=int,default=100) # Batch Size
-    parser.add_argument("--numEpochs",type=int,default=5000) #Max number of epochs to consider at maximum, if patience condition is not met. 
+    parser.add_argument("--numEpochs",type=int,default=500) #Max number of epochs to consider at maximum, if patience condition is not met. 
     parser.add_argument("--lr_rate",type=float,default=.001) # Learning Rate. 
     parser.add_argument("--lr_decay",type=float,default=.7) # Learning rate decay. It decays by this factor every epoch.
     parser.add_argument("--num_layers",default=4) # Number of layers in the network. 
@@ -327,7 +331,7 @@ if __name__=="__main__":
     dict = vars(args)
     print(dict)
 
-    for key,value in dict.iteritems():
+    for key,value in dict.items():
         if (dict[key]=="False"):
             dict[key] = False
         elif dict[key]=="True":

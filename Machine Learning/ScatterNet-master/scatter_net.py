@@ -312,7 +312,7 @@ if __name__=="__main__":
     parser.add_argument("--weight_name_load",type=str,default="")#This would be something that goes infront of w_1.txt. This would be used in saving the weights. In most cases, just leave this as is, it will naturally take care of it. 
     parser.add_argument("--weight_name_save",type=str,default="") #Similiar to above, but for saving now. 
     parser.add_argument("--n_batch",type=int,default=100) # Batch Size
-    parser.add_argument("--numEpochs",type=int,default=500) #Max number of epochs to consider at maximum, if patience condition is not met. 
+    parser.add_argument("--numEpochs",type=int,default=5000) #Max number of epochs to consider at maximum, if patience condition is not met. 
     parser.add_argument("--lr_rate",type=float,default=.001) # Learning Rate. 
     parser.add_argument("--lr_decay",type=float,default=.7) # Learning rate decay. It decays by this factor every epoch.
     parser.add_argument("--num_layers",default=4) # Number of layers in the network. 

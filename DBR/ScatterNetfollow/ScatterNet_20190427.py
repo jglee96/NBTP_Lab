@@ -72,8 +72,8 @@ def main():
                 print(n+1, 'th trained')
         # Test
         print("Testing Model...")
-        Tstate = train_X[-1, :]
-        TR = train_Y[-1, :]
+        Tstate = train_X[100, :]
+        TR = train_Y[100, :]
         X = np.reshape(Tstate, [-1, INPUT_SIZE])
         Y = np.reshape(TR, [-1, OUTPUT_SIZE])
         NR = mainDNN.Test_paly(X, Y, False)

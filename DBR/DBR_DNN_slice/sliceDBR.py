@@ -7,13 +7,13 @@ def calR(s, Nslice, wavelength, nh, nl, high: bool):
     # list of refractive indices
     nt = np.empty(s.shape)
     for i in range(Nslice):
-        if high: # high index material start
-            if (i%2) == 1:
+        if high:  # high index material start
+            if (i % 2) == 1:
                 nt[i] = nl
             else:
                 nt[i] = nh
-        else: # low index material start
-            if (i%2) == 1:
+        else:  # low index material start
+            if (i % 2) == 1:
                 nt[i] = nh
             else:
                 nt[i] = nl

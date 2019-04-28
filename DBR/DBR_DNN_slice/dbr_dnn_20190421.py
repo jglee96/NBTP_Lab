@@ -23,7 +23,7 @@ tarwave = 400
 INPUT_SIZE = Nslice
 OUTPUT_SIZE = len(wavelength[0])
 
-Nfile = 9
+Nfile = 5
 Ntest = 1
 Nsample = 10000
 
@@ -89,101 +89,101 @@ def getData():
 def main():
     # Load Data
     sX, sY, stX, stY = getData()
-    # batch_size = [100]
-    # num_layer = [3, 4, 5, 6, 7]
-    # num_neuron = [200, 250, 300]
-    # learning_rate = [1E-4, 2E-4, 4E-4, 6E-4, 8E-4, 1E-3]
-    batch_size = [100]
-    num_layer = [7]
-    num_neuron = [250]
-    learning_rate = [8E-4]
+    bs = 100
+    nl = 4
+    nn = 250
+    learning_rate = [1E-2]
+    # beta1 = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+    # beta2 = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+    beta1 = [0.7]
+    beta2 = [0.1]
 
     nfigure = 0
-    for bs in batch_size:
-        for nl in num_layer:
-            for nn in num_neuron:
-                for lr in learning_rate:
-                    # Clear our computational graph
-                    tf.reset_default_graph()
-                    with tf.Session() as sess:
-                        print(bs, nl, nn, lr)
-                        mainDNN = fcdnn.FC_DNN(session=sess,
-                                               input_size=INPUT_SIZE,
-                                               output_size=OUTPUT_SIZE,
-                                               batch_size=bs, num_layer=nl,
-                                               num_neuron=nn, learning_rate=lr,
-                                               name='DBRNet')
-                        mainDNN.writer.add_graph(sess.graph)
-                        # Initialize Tensorflow variables
-                        sess.run(tf.global_variables_initializer())
+    for lr in learning_rate:
+        for b1 in beta1:
+            for b2 in beta2:
+                # Clear our computational graph
+                tf.reset_default_graph()
+                with tf.Session() as sess:
+                    print(bs, nl, nn, lr)
+                    mainDNN = fcdnn.FC_DNN(
+                        session=sess, input_size=INPUT_SIZE,
+                        output_size=OUTPUT_SIZE, batch_size=bs,
+                        num_layer=nl, num_neuron=nn, learning_rate=lr,
+                        beta1=b1, beta2=b2, name='DBRNet')
+                    mainDNN.writer.add_graph(sess.graph)
+                    # Initialize Tensorflow variables
+                    sess.run(tf.global_variables_initializer())
 
-                        for n in range(int(Nsample*Nfile/bs)):
-                            X = np.reshape(
-                                sX[n*bs:(n+1)*bs], [bs, INPUT_SIZE])
-                            Y = np.reshape(
-                                sY[n*bs:(n+1)*bs], [bs, OUTPUT_SIZE])
-                            mainDNN.update_train(X, Y, True)
-                            if (n+1) % 100 == 0:
-                                summary = mainDNN.update_tensorboard(
-                                    X, Y, True)
-                                mainDNN.writer.add_summary(
-                                    summary, global_step=n)
-                                print(n+1, 'th trained')
-                        # Test
-                        print("Testing Model...")
-                        lbound = (tarwave/(4*nh))*0.1
-                        hbound = (tarwave/(4*nl))*3
-                        print('lbound: {}, hbound: {}'.format(lbound, hbound))
-                        Tstate = np.random.randint(low=int(lbound),
-                                                   high=int(hbound),
-                                                   size=Nslice, dtype=int)
-                        # Tstate = np.ones(Nslice)
-                        # Tstate = np.array([int(tarwave/(4*nh)),
-                        #                     int(tarwave/(4*nl)),
-                        #                     int(tarwave/(4*nh)),
-                        #                     int(tarwave/(4*nl)),
-                        #                     int(tarwave/(4*nh)),
-                        #                     int(tarwave/(4*nl)),
-                        #                     int(tarwave/(4*nh))])
-                        TR = sliceDBR.calR(
-                            Tstate, Nslice, wavelength, nh, nl, True)
-                        X = np.reshape(Tstate, [-1, INPUT_SIZE])
-                        Y = np.reshape(TR, [-1, OUTPUT_SIZE])
-                        NR = mainDNN.Test_paly(X, Y, False)
-                        NR = np.reshape(NR, [OUTPUT_SIZE, -1])
-                        Tloss = mainDNN.update_loss(X, Y, False)
-                        # loss_List = []
-                        # for n in range(Nsample*Ntest):
-                        #     tX = np.reshape(stX[n], [-1,INPUT_SIZE])
-                        #     tY = np.reshape(stY[n], [-1,OUTPUT_SIZE])
-                        #     tloss = mainDNN.update_loss(tX, tY, False)
-                        #     loss_List.append(tloss)
-                        #     if (n+1)%1000 == 0:
-                        #         print(n+1,'th tested')
+                    for n in range(int(Nsample*Nfile/bs)):
+                        X = np.reshape(
+                            sX[n*bs:(n+1)*bs], [bs, INPUT_SIZE])
+                        Y = np.reshape(
+                            sY[n*bs:(n+1)*bs], [bs, OUTPUT_SIZE])
+                        mainDNN.update_train(X, Y, True)
+                        if (n+1) % 100 == 0:
+                            summary = mainDNN.update_tensorboard(
+                                X, Y, True)
+                            mainDNN.writer.add_summary(
+                                summary, global_step=n)
+                            print(n+1, 'th trained')
+                    # Test
+                    print("Testing Model...")
+                    lbound = (tarwave/(4*nh))*0.1
+                    hbound = (tarwave/(4*nl))*3
+                    print('lbound: {}, hbound: {}'.format(lbound, hbound))
+                    Tstate = np.random.randint(
+                        low=int(lbound), high=int(hbound),
+                        size=Nslice, dtype=int)
+                    # Tstate = np.ones(Nslice)
+                    # Tstate = np.array([int(tarwave/(4*nh)),
+                    #                     int(tarwave/(4*nl)),
+                    #                     int(tarwave/(4*nh)),
+                    #                     int(tarwave/(4*nl)),
+                    #                     int(tarwave/(4*nh)),
+                    #                     int(tarwave/(4*nl)),
+                    #                     int(tarwave/(4*nh))])
+                    # Tstate = stX[1]
+                    TR = sliceDBR.calR(
+                        Tstate, Nslice, wavelength, nh, nl, True)
+                    # TR = stY[1]
+                    X = np.reshape(Tstate, [-1, INPUT_SIZE])
+                    Y = np.reshape(TR, [-1, OUTPUT_SIZE])
+                    NR = mainDNN.Test_paly(X, Y, False)
+                    NR = np.reshape(NR, [OUTPUT_SIZE, -1])
+                    Tloss = mainDNN.update_loss(X, Y, False)
+                    # loss_List = []
+                    # for n in range(Nsample*Ntest):
+                    #     tX = np.reshape(stX[n], [-1,INPUT_SIZE])
+                    #     tY = np.reshape(stY[n], [-1,OUTPUT_SIZE])
+                    #     tloss = mainDNN.update_loss(tX, tY, False)
+                    #     loss_List.append(tloss)
+                    #     if (n+1)%1000 == 0:
+                    #         print(n+1,'th tested')
 
-                        print('LOSS: ', Tloss)
-                        x = np.reshape(wavelength, wavelength.shape[1])
-                        plt.figure(2)
-                        plt.subplot(2, 1, 1)
-                        plt.plot(x, TR)
+                    print('LOSS: ', Tloss)
+                    x = np.reshape(wavelength, wavelength.shape[1])
+                    plt.figure(2)
+                    plt.subplot(2, 1, 1)
+                    plt.plot(x, TR)
 
-                        plt.subplot(2, 1, 2)
-                        plt.plot(x, NR)
-                        plt.show()
+                    plt.subplot(2, 1, 2)
+                    plt.plot(x, NR)
+                    plt.show()
 
-                        # plt.figure(nfigure)
-                        # nfigure = nfigure + 1
-                        # plt.plot(range(len(loss_List)), loss_List)
-                        # fig2 = plt.gcf()
-                        # fig2_name = SAVE_PATH+'/FollowScatterNet/{}_{}_{}_{:.5f}'.format(bs, nl, nn, lr)+'_loss.png'
-                        # fig2_name = SAVE_PATH+'/'+datetime.now().strftime("%Y%m%d%H%M")
-                        # fig2.savefig(fig2_name)
+                    # plt.figure(nfigure)
+                    # nfigure = nfigure + 1
+                    # plt.plot(range(len(loss_List)), loss_List)
+                    # fig2 = plt.gcf()
+                    # fig2_name = SAVE_PATH+'/FollowScatterNet/{}_{}_{}_{:.5f}'.format(bs, nl, nn, lr)+'_loss.png'
+                    # fig2_name = SAVE_PATH+'/'+datetime.now().strftime("%Y%m%d%H%M")
+                    # fig2.savefig(fig2_name)
 
-                        # f = open(FPATH+'/Loss Test(followscatternet).txt', 'a')
-                        # loss_average = sum(loss_List)/len(loss_List)
-                        # loss_max = max(loss_List)
-                        # write_line = 'Batch Size: {}, Num Layer: {}, Num Neuron: {}, Learning Rate: {:.5f} -- Average: {:.3f}, Max: {:.5f}\n'.format(bs, nl, nn, lr, loss_average, loss_max)
-                        # f.write(write_line)
-                        # f.close()
+                    # f = open(FPATH+'/Loss Test(Compareb1b2).txt', 'a')
+                    # # loss_average = sum(loss_List)/len(loss_List)
+                    # # loss_max = max(loss_List)
+                    # write_line = 'Beta1: {:.1f}, Beta2: {:.1f} -- Loss: {:.5f}\n'.format(b1, b2, Tloss)
+                    # f.write(write_line)
+                    # f.close()
 if __name__ == "__main__":
     main()

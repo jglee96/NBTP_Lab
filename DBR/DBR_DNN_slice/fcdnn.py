@@ -11,19 +11,20 @@ class FC_DNN:
         def __init__(self, session: tf.Session,
                      input_size: int, output_size: int, batch_size: int,
                      num_layer: int, num_neuron: int, learning_rate: float,
-                     name: str):
+                     beta1: float, beta2: float, name: str):
                 self.session = session
                 self.input_size = input_size
                 self.output_size = output_size
                 self.net_name = name
-                # log_name = FPATH+'/logs/FollowScatterNet/{}_{}_{}_{:.5f}'.format(batch_size, num_layer, num_neuron, learning_rate)
+                # log_name = FPATH+'/logs/FollowScatterNet/{:.1f}_{:.1f}'.format(beta1, beta2)
                 log_name = FPATH+'/logs/'+datetime.now().strftime("%Y%m%d%H%M")
                 self.writer = tf.summary.FileWriter(log_name)
                 self._build_network(
-                        batch_size, num_layer, num_neuron, learning_rate)
+                        batch_size, num_layer, num_neuron,
+                        learning_rate, beta1, beta2)
 
         def _build_network(self, batch_size,
-                           num_layer, num_neuron, learning_rate):
+                           num_layer, num_neuron, learning_rate, beta1, beta2):
                 # hiddenlayer's number and length
                 self.Phase = tf.placeholder(tf.bool)
 
@@ -55,7 +56,7 @@ class FC_DNN:
                 self.loss_hist = tf.summary.scalar('loss', self.loss)
 
                 optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate,
-                                                   beta1=0.7, beta2=0.7,
+                                                   beta1=beta1, beta2=beta2,
                                                    epsilon=0.1)
                 self.train = optimizer.minimize(self.loss)
 

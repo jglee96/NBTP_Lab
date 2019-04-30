@@ -75,7 +75,9 @@ def design_spectrum(data,reuse_weights,output_folder,weight_name_save,weight_nam
     newL = 1.0/(myl*myl*3).astype(np.float32)
     # Forward propagation
     X_norm = (X - x_mean) / x_std
-    yhat = forwardprop(X_norm, weights,biases, num_layers, minLimit=(30-x_mean)/x_std, maxLimit=(70-x_mean)/x_std)
+    yhat = forwardprop(
+        X_norm, weights,biases, num_layers,
+        minLimit=(30-x_mean)/x_std, maxLimit=(70-x_mean)/x_std)
     # This will scale by the wavelength
     yhat = tf.multiply(yhat,newL)
     # Backward propagation

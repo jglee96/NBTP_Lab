@@ -84,11 +84,10 @@ class FC_DNN:
                 }
                 return self.session.run(self.merged_summary, feed)
 
-        def Test_paly(self, x_stack, y_stack, phase):
+        def Test_paly(self, x_stack, phase):
 
                 feed = {
                         self.X: x_stack,
-                        self.Y: y_stack,
                         self.Phase: phase
                 }
                 return self.session.run(self.Rpred, feed)

@@ -83,9 +83,10 @@ def main():
 
         d_list = tf.concat(
                 [tf.zeros([1, 1]), x, tf.zeros([1, 1])], 1)
-        vec = tf.ones([OUTPUT_SIZE, 1])
-        d_list = tf.multiply(vec, d_list)
-        d_list = tf.reshape(d_list, [OUTPUT_SIZE, INPUT_SIZE])
+        # vec = tf.ones([OUTPUT_SIZE, 1])
+        d_list = tf.tile(d_list, [OUTPUT_SIZE, 1])
+        # d_list = tf.multiply(vec, d_list)
+        print(d_list)
         delta = tf.multiply(kz_list, d_list)  # (wavelength, n_list)
 
         yhat 

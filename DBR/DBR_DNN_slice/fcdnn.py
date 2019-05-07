@@ -11,7 +11,7 @@ class FC_DNN:
         def __init__(self, session: tf.Session,
                      input_size: int, output_size: int, batch_size: int,
                      num_layer: int, num_neuron: int, learning_rate: float,
-                     name: str):
+                     name: str, beta1: float, beta2: float):
                 self.session = session
                 self.input_size = input_size
                 self.output_size = output_size
@@ -21,10 +21,10 @@ class FC_DNN:
                 self.writer = tf.summary.FileWriter(log_name)
                 self._build_network(
                         batch_size, num_layer, num_neuron,
-                        learning_rate)
+                        learning_rate, beta1, beta2)
 
         def _build_network(self, batch_size,
-                           num_layer, num_neuron, learning_rate):
+                           num_layer, num_neuron, learning_rate, beta1, beta2):
                 # hiddenlayer's number and length
                 self.Phase = tf.placeholder(tf.bool)
 
@@ -52,12 +52,12 @@ class FC_DNN:
                         name="output_y")
                 # self.loss = tf.losses.mean_squared_error(self.Y, self.Rpred)
                 # self.loss = tf.reduce_mean(tf.square(self.Y-self.Rpred))
-                # self.loss = tf.reduce_sum(tf.square(self.Y-self.Rpred))
-                self.loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(labels=self.Y, logits=self.Rpred))
+                self.loss = tf.reduce_sum(tf.square(self.Y-self.Rpred))
+                # self.loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(labels=self.Y, logits=self.Rpred))
                 self.loss_hist = tf.summary.scalar('loss', self.loss)
 
                 optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate,
-                                                   beta2=0.7)
+                                                   beta1=beta1, beta2=beta2)
                 self.train = optimizer.minimize(self.loss)
 
                 # Batch Normalization function

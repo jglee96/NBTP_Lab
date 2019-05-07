@@ -49,8 +49,8 @@ def getData(filename):
 def gen_spect_file():
         npwave = np.array(wavelength)
         spect = np.zeros((1, npwave.shape[0]), dtype=int)
-        minrange = 600
-        maxrange = 650
+        minrange = 420
+        maxrange = 540
         
         minidx = np.where(npwave == minrange)[0][0]
         maxidx = np.where(npwave == maxrange)[0][0]
@@ -115,16 +115,17 @@ def design_specturm():
         botval = tf.abs(tf.matmul(tf.abs(y-1),tf.transpose(tf.abs(yhat))))
         # botval = tf.reduce_mean(tf.matmul(tf.abs(y-1),tf.transpose(tf.abs(yhat))))
         cost = botval/topval
-        # global_step = tf.Variable(0, trainable=False)
-        # learning_rate = tf.train.exponential_decay(
-        #         1E-3,global_step,1000,0.7, staircase=False)
-        # optimizer = tf.train.RMSPropOptimizer(
-        #         learning_rate=learning_rate).minimize(
-        #                 cost, global_step=global_step, var_list=[x])
-        optimizer = tf.train.AdamOptimizer(learning_rate=1E-2).minimize(cost, var_list=[x])
+        # cost = topval/botval
+        global_step = tf.Variable(0, trainable=False)
+        learning_rate = tf.train.exponential_decay(
+                1E-3,global_step,1000,0.7, staircase=False)
+        optimizer = tf.train.RMSPropOptimizer(
+                learning_rate=learning_rate).minimize(
+                        cost, global_step=global_step, var_list=[x])
+        # optimizer = tf.train.AdamOptimizer(learning_rate=1E-3).minimize(cost, var_list=[x])
 
         # get design data where we want
-        design_name = 'D:/NBTP_Lab/DBR/ScatterNetfollow/data/gen_spect(500_550)'
+        design_name = 'D:/NBTP_Lab/DBR/ScatterNetfollow/data/gen_spect(460_470)'
         design_y = getdesignData(design_name)
         numEpoch = 50000
         start_time=time.time()

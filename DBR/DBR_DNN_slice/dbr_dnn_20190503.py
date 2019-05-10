@@ -23,19 +23,19 @@ tarwave = 400
 INPUT_SIZE = Nslice
 OUTPUT_SIZE = len(wavelength[0])
 
-Nfile = 5
+Nfile = 10
 Ntest = 1
 Nsample = 10000
 
 # train set file name
 FPATH = 'D:/NBTP_Lab/DBR/DBR_DNN_slice'
 SAVE_PATH = FPATH + '/result/'
-statefilename = '/trainset/Trainset06/state_trainset06'
-Rfilename = '/trainset/Trainset06/R_trainset06'
+statefilename = '/trainset/Trainset07/state_trainset07'
+Rfilename = '/trainset/Trainset07/R_trainset07'
 
 # Base data
-lbound = (tarwave/(4*nh))*0.5
-ubound = (tarwave/(4*nl))*1.5
+lbound = (tarwave/(4*nh)) - 20
+ubound = (tarwave/(4*nl)) + 20
 print("======== Design Information ========")
 print('tarwave: {}, nh: {:.3f}, nl: {:.3f}'.format(tarwave, nh, nl))
 print('lbound: {:.3f}, ubound: {:.3f}'.format(lbound, ubound))
@@ -90,11 +90,13 @@ def main():
     sX, sY, stX, stY, x_mean, x_std = getData()
     print("========  Load Data Sucess  ========")
     bs = 64
-    nl = 3
-    nn = 250
-    lr = 1E-3
-    beta1 = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
-    beta2 = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.999]
+    nl = 2
+    nn = 4000
+    lr = 1E-4
+    # beta1 = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+    # beta2 = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.999]
+    beta1 = [0.9]
+    beta2 = [0.7]
 
     print("========   Training Start   ========")
     nfigure = 0
@@ -119,18 +121,14 @@ def main():
                     Y = np.reshape(
                         sY[n*bs:(n+1)*bs], [bs, OUTPUT_SIZE])
                     mainDNN.update_train(X, Y, True)
-                    # if (n+1) % 100 == 0:
-                    #     summary = mainDNN.update_tensorboard(
-                    #         X, Y, True)
-                    #     mainDNN.writer.add_summary(
-                    #         summary, global_step=n)
-                    #     print('{}th trained'.format(n+1))
+                    if (n+1) % 100 == 0:
+                        summary = mainDNN.update_tensorboard(
+                            X, Y, True)
+                        mainDNN.writer.add_summary(
+                            summary, global_step=n)
+                        print('{}th trained'.format(n+1))
                 # Test
-                print("Testing Model...")
-                np.random.seed(42)
-                Tstate = np.random.randint(
-                    low=int(lbound), high=int(ubound),
-                    size=Nslice, dtype=int)
+                print("Testing Model...")               
                 # Tstate = np.ones(Nslice)
                 # Tstate = np.array([int(tarwave/(4*nh)),
                 #                     int(tarwave/(4*nl)),
@@ -139,11 +137,11 @@ def main():
                 #                     int(tarwave/(4*nh)),
                 #                     int(tarwave/(4*nl)),
                 #                     int(tarwave/(4*nh))])
-                # Tstate = stX[1]
-                TR = sliceDBR.calR(
-                    Tstate, Nslice, wavelength, nh, nl, True)
+                Tstate = stX[1]
+                # TR = sliceDBR.calR(
+                #     Tstate, Nslice, wavelength, nh, nl, True)
                 Tstate = (Tstate - x_mean) / x_std
-                # TR = stY[1]
+                TR = stY[1]
                 X = np.reshape(Tstate, [-1, INPUT_SIZE])
                 Y = np.reshape(TR, [-1, OUTPUT_SIZE])
                 NR = mainDNN.Test_paly(X, Y, False)
@@ -158,15 +156,15 @@ def main():
                 #     if (n+1)%1000 == 0:
                 #         print(n+1,'th tested')
 
-                # print('LOSS: ', Tloss)
-                # x = np.reshape(wavelength, wavelength.shape[1])
-                # plt.figure(2)
-                # plt.subplot(2, 1, 1)
-                # plt.plot(x, TR)
+                print('LOSS: ', Tloss)
+                x = np.reshape(wavelength, wavelength.shape[1])
+                plt.figure(2)
+                plt.subplot(2, 1, 1)
+                plt.plot(x, TR)
 
-                # plt.subplot(2, 1, 2)
-                # plt.plot(x, NR)
-                # plt.show()
+                plt.subplot(2, 1, 2)
+                plt.plot(x, NR)
+                plt.show()
 
                 # plt.figure(nfigure)
                 # nfigure = nfigure + 1
@@ -176,11 +174,11 @@ def main():
                 # fig2_name = SAVE_PATH+'/'+datetime.now().strftime("%Y%m%d%H%M")
                 # fig2.savefig(fig2_name)
 
-                f = open(FPATH+'/Loss Test(Sigmoid Entropy SSE).txt', 'a')
-                # loss_average = sum(loss_List)/len(loss_List)
-                # loss_max = max(loss_List)
-                write_line = 'Beta1: {:.1f}, Beta2: {:.1f} -- Loss: {:.5f}\n'.format(b1, b2, Tloss)
-                f.write(write_line)
-                f.close()
+                # f = open(FPATH+'/Loss Test(Sigmoid Entropy SSE).txt', 'a')
+                # # loss_average = sum(loss_List)/len(loss_List)
+                # # loss_max = max(loss_List)
+                # write_line = 'Beta1: {:.1f}, Beta2: {:.1f} -- Loss: {:.5f}\n'.format(b1, b2, Tloss)
+                # f.write(write_line)
+                # f.close()
 if __name__ == "__main__":
     main()

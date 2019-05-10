@@ -1,6 +1,7 @@
 import numpy as np
 import tmm
 
+
 def calR(s, Nslice, wavelength, nh, nl, high: bool):
     # list of layer thickness in nm
     d_list = [np.inf] + s.tolist() + [np.inf]

@@ -32,12 +32,34 @@ class FC_DNN:
                                         name="input_x")
                 # net = self.Batch_Normalization(
                 #         x=self.X, training=self.Phase, scope='BN_input')
-                net = self.X
+                # net = self.X
+                net = tf.reshape(self.X, [-1, 1, self.input_size, 1])
+
+                # Conv. net
+                for i in range(8):
+                        conv_name = 'Resnet' + str(i)
+                        with tf.name_scope(conv_name):
+                                # Conv
+                                conv1 = tf.layers.conv2d(
+                                        inputs=net, filters=1,
+                                        kernel_size=[1,3], padding="SAME")
+                                # Dropout
+                                dropout1 = tf.layers.dropout(inputs=tf.nn.relu(conv1), rate=0.5)
+                                # Conv
+                                conv2 = tf.layers.conv2d(
+                                        inputs=dropout1, filters=1,
+                                        kernel_size=[1,3], padding="SAME")
+                                # Dropout
+                                dropout2 = tf.layers.dropout(inputs=tf.nn.relu(conv2), rate=0.5)
+                                net = tf.nn.relu(dropout2 + net)
+                
+                net = tf.reshape(net, [-1, self.input_size])
 
                 # more hidden layer not one
                 for i in range(num_layer):
-                        layer_name = 'FC'+str(i)
+                        layer_name = 'FC' + str(i)
                         with tf.name_scope(layer_name):
+                                # Fully Connected
                                 net = tf.contrib.layers.fully_connected(
                                         net, num_neuron,
                                         activation_fn=tf.nn.relu,
@@ -53,10 +75,10 @@ class FC_DNN:
                 # self.loss = tf.losses.mean_squared_error(self.Y, self.Rpred)
                 # self.loss = tf.reduce_mean(tf.square(self.Y-self.Rpred))
                 self.loss = tf.reduce_sum(tf.square(self.Y-self.Rpred))
-                # self.loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(labels=self.Y, logits=self.Rpred))
+                # self.loss = tf.reduce_sum(tf.nn.sigmoid_cross_entropy_with_logits(labels=self.Y, logits=self.Rpred))
                 self.loss_hist = tf.summary.scalar('loss', self.loss)
 
-                optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate,
+                optimizer = tf.contrib.optimizer_v2.AdamOptimizer(learning_rate=learning_rate,
                                                    beta1=beta1, beta2=beta2)
                 self.train = optimizer.minimize(self.loss)
 

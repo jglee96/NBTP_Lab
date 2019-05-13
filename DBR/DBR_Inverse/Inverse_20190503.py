@@ -9,6 +9,7 @@ import time
 import tmm_copy
 # import sliceDBR
 from datetime import datetime
+from tensorflow.python.framework.ops import get_gradient_function
 
 # DBR model
 Nslice = 7
@@ -71,7 +72,7 @@ def main():
         init_list_rand = tf.constant(
                 np.random.rand(1, INPUT_SIZE)*(ubound - lbound) + lbound,
                 dtype=tf.float32)
-        x = tf.get_variable(name='b', initializer=init_list_rand)
+        x = tf.Variable(initial_value=init_list_rand)
         y = tf.placeholder(tf.float32, shape=[None, OUTPUT_SIZE])
 
         minLimit = lbound
@@ -80,36 +81,6 @@ def main():
         x = tf.minimum(x, maxLimit)
 
         # Calculate Trasfer Matrix with tf
-        # n_list = np.empty(INPUT_SIZE)
-        # for i in range(Nslice):
-        #         if (i % 2) == 0:
-        #                 n_list[i] = nh
-        #         else:
-        #                 n_list[i] = nl
-        # n_list = np.concatenate(([1], n_list, [1]))
-        # n_list = np.reshape(n_list, (1, INPUT_SIZE + 2))
-        # kz_list = 2 * np.pi * n_list / np.transpose(wavelength)  # (wavelength, n_list)
-        # num_layer = INPUT_SIZE + 2
-
-        # n_list = tf.constant(n_list, dtype=tf.float32)
-        # kz_list = tf.constant(kz_list, dtype=tf.float32)
-
-        # d_list = tf.concat(
-        #         [tf.zeros([1, 1]), x, tf.zeros([1, 1])], 1)
-        # d_list = tf.reshape(d_list, shape=[-1])
-        # delta = tf.multiply(kz_list, d_list)  # (wavelength, n_list)
-
-        # t_list = np.zeros(shape=(num_layer, num_layer), dtype=complex)
-        # r_list = np.zeros(shape=(num_layer, num_layer), dtype=complex)
-        # for i in range(num_layer-1):
-        #         t_list[i, i+1] = tmm_copy.interface_t(
-        #                 pol, n_list[i], n_list[i+1],
-        #                 th_list[i], th_list[i+1])
-        #         r_list[i, i+1] = tmm_copy.interface_r(
-        #                 pol, n_list[i], n_list[i+1],
-        #                 th_list[i], th_list[i+1])
-        # M_list = np.zeros(shape=(num_layer, 2, 2), dtype=complex)
-
         n_list = np.empty(INPUT_SIZE)
         for i in range(Nslice):
                 if (i % 2) == 0:
@@ -129,29 +100,35 @@ def main():
         d_list = tf.reshape(d_list, shape=[-1])
         delta = tf.multiply(kz_list, d_list)  # (wavelength, n_list)
 
-        temp = tf.Variable(
-                initial_value=[[1.0+0.0j, 0.0+0.0j],
-                               [0.0+0.0j, 1.0+0.0j]],
-                trainable=False,
-                dtype=tf.complex)
-        Btot = [tf.Variable(
-                initial_value=[[1.0+0.0j, 0.0+0.0j],
-                               [0.0+0.0j, 1.0+0.0j]],
-                trainable=False,
-                dtype=tf.complex) for _ in range(OUTPUT_SIZE)]
-        R = []
+        eye = [[1.0, 0.0], [0.0, 1.0]]
+        eye_complex = tf.Variable(initial_value=tf.complex(eye, 0.0), trainable=False)
+        Btot = [eye_complex for _ in range(OUTPUT_SIZE)]
+        b00, b01, b10, b11, Bt, R = [], [], [], [], [], []
         for w in range(OUTPUT_SIZE):
-                for i in range(INPUT_SIZE):
-                        Bt = 0.5 * tf.Variable(
-                                initial_value=[[(1 + (tf.gather_nd(n_list, [i + 1]) / tf.gather_nd(n_list, [i]))) * tf.exp(-1j * tf.gather_nd(delta, [w, i])),
-                                                (1 - (tf.gather_nd(n_list, [i + 1]) / tf.gather_nd(n_list, [i]))) * tf.exp(1j * tf.gather_nd(delta, [w, i]))],
-                                               [(1 - (tf.gather_nd(n_list, [i + 1]) / tf.gather_nd(n_list, [i]))) * tf.exp(-1j * tf.gather_nd(delta, [w, i])),
-                                                (1 + (tf.gather_nd(n_list, [i + 1]) / tf.gather_nd(n_list, [i]))) * tf.exp(1j * tf.gather_nd(delta, [w, i]))]],
-                                trainable=False, dtype=tf.complex)
-                        Btot[w] = tf.matmul(Btot, Bt)
+                for i in range(INPUT_SIZE - 1):
+                        gather_delta = tf.gather_nd(delta, [w, i])
+                        gather_P = (tf.gather_nd(n_list, [0, i + 1]) / tf.gather_nd(n_list, [0, i]))
+                        b00.append(tf.Variable(
+                                initial_value=tf.complex((1 + gather_P) * tf.cos(-1 * gather_delta), (1 + gather_P) * tf.sin(-1 * gather_delta)),
+                                trainable=False))
+                        b01.append(tf.Variable(
+                                initial_value=tf.complex((1 - gather_P) * tf.cos(+1 * gather_delta), (1 - gather_P) * tf.sin(+1 * gather_delta)),
+                                trainable=False))
+                        b10.append(tf.Variable(
+                                initial_value=tf.complex((1 - gather_P) * tf.cos(-1 * gather_delta), (1 - gather_P) * tf.sin(-1 * gather_delta)),
+                                trainable=False))
+                        b11.append(tf.Variable(
+                                initial_value=tf.complex((1 + gather_P) * tf.cos(+1 * gather_delta), (1 + gather_P) * tf.sin(+1 * gather_delta)),\
+                                trainable=False))
+                        Bt.append(tf.Variable(
+                                initial_value=tf.complex(0.5, 0.0) * [[b00[w+i], b01[w+i]], [b10[w+i], b11[w+i]]],
+                                trainable=False))
+                        Btot[w] = tf.matmul(Btot[w], Bt[w+i])
                 R.append(tf.square(tf.gather_nd(Btot[w], [1, 0]) / tf.gather_nd(Btot[w], [0, 0])))
         # Backward propagation
         # This will select all the values that we want.
+        yhat = tf.stack(R)
+        yhat = tf.reshape(yhat, shape=[-1, OUTPUT_SIZE])
         topval = tf.abs(tf.matmul(y, tf.transpose(tf.abs(yhat))))
         # topval = tf.reduce_mean(tf.matmul(y,tf.transpose(tf.abs(yhat))))
         # This will get the values that we do not want
@@ -162,11 +139,12 @@ def main():
         # global_step = tf.Variable(0, trainable=False)
         # learning_rate = tf.train.exponential_decay(
         #         1E-3,global_step,1000,0.7, staircase=False)
+
         # optimizer = tf.train.RMSPropOptimizer(
         #         learning_rate=learning_rate).minimize(
         #                 cost, global_step=global_step, var_list=[x])
-        optimizer = tf.train.AdamOptimizer(
-                learning_rate=1E-2).minimize(cost, var_list=[x])
+        optimizer = tf.contrib.optimizer_v2.AdamOptimizer(
+                learning_rate=1E-3).minimize(cost, var_list=[x])
 
         # get design data where we want
         design_name = 'C:/Users/owner/Documents/LJG/DBR_Inverse/data/gen_spect(500_550)'

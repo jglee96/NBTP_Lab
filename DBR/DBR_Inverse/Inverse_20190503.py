@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import os
 import time
-import tmm_copy
 # import sliceDBR
 from datetime import datetime
 from tensorflow.python.framework.ops import get_gradient_function
@@ -90,7 +89,6 @@ def main():
         n_list = np.concatenate(([1], n_list, [1]))
         n_list = np.reshape(n_list, (1, INPUT_SIZE + 2))
         kz_list = 2 * np.pi * n_list / np.transpose(wavelength)  # (wavelength, n_list)
-        num_layer = INPUT_SIZE + 2
 
         n_list = tf.constant(n_list, dtype=tf.float32)
         kz_list = tf.constant(kz_list, dtype=tf.float32)
@@ -103,31 +101,43 @@ def main():
         eye = [[1.0, 0.0], [0.0, 1.0]]
         eye_complex = tf.Variable(initial_value=tf.complex(eye, 0.0), trainable=False)
         Btot = [eye_complex for _ in range(OUTPUT_SIZE)]
-        b00, b01, b10, b11, Bt, R = [], [], [], [], [], []
+        b00 = tf.Variable(initial_value=[tf.complex(1.0, 0.0)], trainable=False)
+        b01 = tf.Variable(initial_value=[tf.complex(1.0, 0.0)], trainable=False)
+        b10 = tf.Variable(initial_value=[tf.complex(1.0, 0.0)], trainable=False)
+        b11 = tf.Variable(initial_value=[tf.complex(1.0, 0.0)], trainable=False)
+        Bt = tf.Variable(initial_value=tf.complex(eye, 0.0), trainable=False)
+        R = tf.Variable(initial_value=[1.0], trainable=False)
+        print('======== Transfer Matrix Model Generation ========')
         for w in range(OUTPUT_SIZE):
                 for i in range(INPUT_SIZE - 1):
+                        idx = w * (INPUT_SIZE - 1) + i + 1
                         gather_delta = tf.gather_nd(delta, [w, i])
                         gather_P = (tf.gather_nd(n_list, [0, i + 1]) / tf.gather_nd(n_list, [0, i]))
-                        b00.append(tf.Variable(
-                                initial_value=tf.complex((1 + gather_P) * tf.cos(-1 * gather_delta), (1 + gather_P) * tf.sin(-1 * gather_delta)),
-                                trainable=False))
-                        b01.append(tf.Variable(
-                                initial_value=tf.complex((1 - gather_P) * tf.cos(+1 * gather_delta), (1 - gather_P) * tf.sin(+1 * gather_delta)),
-                                trainable=False))
-                        b10.append(tf.Variable(
-                                initial_value=tf.complex((1 - gather_P) * tf.cos(-1 * gather_delta), (1 - gather_P) * tf.sin(-1 * gather_delta)),
-                                trainable=False))
-                        b11.append(tf.Variable(
-                                initial_value=tf.complex((1 + gather_P) * tf.cos(+1 * gather_delta), (1 + gather_P) * tf.sin(+1 * gather_delta)),\
-                                trainable=False))
-                        Bt.append(tf.Variable(
-                                initial_value=tf.complex(0.5, 0.0) * [[b00[w+i], b01[w+i]], [b10[w+i], b11[w+i]]],
-                                trainable=False))
-                        Btot[w] = tf.matmul(Btot[w], Bt[w+i])
-                R.append(tf.square(tf.gather_nd(Btot[w], [1, 0]) / tf.gather_nd(Btot[w], [0, 0])))
+
+                        Bt = tf.reshape(Bt, shape=[-1, 2, 2])
+                        b00 = tf.concat([b00, tf.Variable(
+                                initial_value=[tf.complex((1 + gather_P) * tf.cos(-1 * gather_delta), (1 + gather_P) * tf.sin(-1 * gather_delta))],
+                                trainable=False)], axis=0)
+                        b01 = tf.concat([b01, tf.Variable(
+                                initial_value=[tf.complex((1 - gather_P) * tf.cos(+1 * gather_delta), (1 - gather_P) * tf.sin(+1 * gather_delta))],
+                                trainable=False)], axis=0)
+                        b10 = tf.concat([b10, tf.Variable(
+                                initial_value=[tf.complex((1 - gather_P) * tf.cos(-1 * gather_delta), (1 - gather_P) * tf.sin(-1 * gather_delta))],
+                                trainable=False)], axis=0)
+                        b11 = tf.concat([b11, tf.Variable(
+                                initial_value=[tf.complex((1 + gather_P) * tf.cos(+1 * gather_delta), (1 + gather_P) * tf.sin(+1 * gather_delta))],
+                                trainable=False)], axis=0)
+                        Bt = tf.concat([Bt, tf.Variable(
+                                initial_value=[tf.complex(0.5, 0.0) * [[tf.gather_nd(b00, [idx]), tf.gather_nd(b01, [idx])], [tf.gather_nd(b10, [idx]), tf.gather_nd(b11, [idx])]]],
+                                trainable=False)], axis=0)
+                        Btot[w] = tf.matmul(Btot[w], tf.gather_nd(Bt, [idx]))
+                R = tf.concat([R, tf.cast(
+                        [tf.square(
+                                tf.gather_nd(Btot[w], [1, 0]) / tf.gather_nd(Btot[w], [0, 0]))],
+                        dtype=tf.float32)], axis=0)
         # Backward propagation
         # This will select all the values that we want.
-        yhat = tf.stack(R)
+        yhat = tf.slice(R, [1], [-1])
         yhat = tf.reshape(yhat, shape=[-1, OUTPUT_SIZE])
         topval = tf.abs(tf.matmul(y, tf.transpose(tf.abs(yhat))))
         # topval = tf.reduce_mean(tf.matmul(y,tf.transpose(tf.abs(yhat))))
@@ -145,6 +155,7 @@ def main():
         #                 cost, global_step=global_step, var_list=[x])
         optimizer = tf.contrib.optimizer_v2.AdamOptimizer(
                 learning_rate=1E-3).minimize(cost, var_list=[x])
+        print('======== Transfer Matrix Model Generation Complete========')
 
         # get design data where we want
         design_name = 'C:/Users/owner/Documents/LJG/DBR_Inverse/data/gen_spect(500_550)'
@@ -160,7 +171,7 @@ def main():
                                 loss = sess.run(
                                         cost, feed_dict={y: design_y})[0][0]
                                 print('Step: {}, Loss: {:.5f}, X: {}'.format((n+1), loss, x.eval()))
-        print("========Iterations completed in : {:.3f} ========".format((time.time()-start_time)))
+        print("======== Iterations completed in : {:.3f} ========".format((time.time()-start_time)))
 
 if __name__ == "__main__":
         train = True

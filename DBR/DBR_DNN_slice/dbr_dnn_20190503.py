@@ -90,13 +90,13 @@ def main():
     sX, sY, stX, stY, x_mean, x_std = getData()
     print("========  Load Data Sucess  ========")
     bs = 64
-    nl = 2
-    nn = 4000
-    lr = 1E-4
+    nl = 4
+    nn = 250
+    lr = 1E-3
     # beta1 = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
     # beta2 = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.999]
     beta1 = [0.9]
-    beta2 = [0.7]
+    beta2 = [0.999]
 
     print("========   Training Start   ========")
     nfigure = 0

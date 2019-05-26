@@ -32,28 +32,28 @@ class FC_DNN:
                                         name="input_x")
                 # net = self.Batch_Normalization(
                 #         x=self.X, training=self.Phase, scope='BN_input')
-                # net = self.X
-                net = tf.reshape(self.X, [-1, 1, self.input_size, 1])
+                net = self.X
+                # net = tf.reshape(self.X, [-1, 1, self.input_size, 1])
 
-                # Conv. net
-                for i in range(8):
-                        conv_name = 'Resnet' + str(i)
-                        with tf.name_scope(conv_name):
-                                # Conv
-                                conv1 = tf.layers.conv2d(
-                                        inputs=net, filters=1,
-                                        kernel_size=[1,3], padding="SAME")
-                                # Dropout
-                                dropout1 = tf.layers.dropout(inputs=tf.nn.relu(conv1), rate=0.5)
-                                # Conv
-                                conv2 = tf.layers.conv2d(
-                                        inputs=dropout1, filters=1,
-                                        kernel_size=[1,3], padding="SAME")
-                                # Dropout
-                                dropout2 = tf.layers.dropout(inputs=tf.nn.relu(conv2), rate=0.5)
-                                net = tf.nn.relu(dropout2 + net)
+                # # Conv. net
+                # for i in range(8):
+                #         conv_name = 'Resnet' + str(i)
+                #         with tf.name_scope(conv_name):
+                #                 # Conv
+                #                 conv1 = tf.layers.conv2d(
+                #                         inputs=net, filters=1,
+                #                         kernel_size=[1,3], padding="SAME")
+                #                 # Dropout
+                #                 dropout1 = tf.layers.dropout(inputs=tf.nn.relu(conv1), rate=0.5)
+                #                 # Conv
+                #                 conv2 = tf.layers.conv2d(
+                #                         inputs=dropout1, filters=1,
+                #                         kernel_size=[1,3], padding="SAME")
+                #                 # Dropout
+                #                 dropout2 = tf.layers.dropout(inputs=tf.nn.relu(conv2), rate=0.5)
+                #                 net = tf.nn.relu(dropout2 + net)
                 
-                net = tf.reshape(net, [-1, self.input_size])
+                # net = tf.reshape(net, [-1, self.input_size])
 
                 # more hidden layer not one
                 for i in range(num_layer):
@@ -62,11 +62,16 @@ class FC_DNN:
                                 # Fully Connected
                                 net = tf.contrib.layers.fully_connected(
                                         net, num_neuron,
+                                        weights_initializer=tf.contrib.layers.xavier_initializer(),
+                                        biases_initializer=tf.contrib.layers.xavier_initializer(),
                                         activation_fn=tf.nn.relu,
                                         scope=layer_name)
 
                 net = tf.contrib.layers.fully_connected(
-                        net, self.output_size, activation_fn=None)
+                        net, self.output_size, activation_fn=None,
+                        weights_initializer=tf.contrib.layers.xavier_initializer(),
+                        biases_initializer=tf.contrib.layers.xavier_initializer()
+                        )
                 self.Rpred = net
 
                 self.Y = tf.placeholder(

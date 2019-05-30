@@ -88,6 +88,10 @@ def main():
     lx = np.arange(N_pixel)
     plt.subplot(2, 1, 2)
     plt.bar(lx, result_state, width=1, color='blue')
+    # plt.show()
+
+    plt.figure(1)
+    plt.bar(lx, rX, width=1, color='blue')
     plt.show()
 
     thickness = getThickness(result_state, dx, N_pixel)

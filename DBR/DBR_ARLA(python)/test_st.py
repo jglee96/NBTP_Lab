@@ -4,14 +4,16 @@ import matplotlib.pyplot as plt
 
 # Real world environnment
 N_layer = 11
-nh = 2.6811  # TiO2 at 400 nm (Siefke)
-nl = 1.4701  # SiO2 at 400 nm (Malitson)
+# nh = 2.6811  # TiO2 at 400 nm (Siefke)
+# nl = 1.4701  # SiO2 at 400 nm (Malitson)
+nh = 1.47 # Veroclear at 800 nm
+nl = 1 # Air
 
-minwave = 200
-maxwave = 800
+minwave = 100
+maxwave = 1200
 wavestep = 5
 wavelength = np.array([np.arange(minwave, maxwave, wavestep)])
-tarwave = 400
+tarwave = 600
 
 Tstate = np.array([
     int(tarwave/(4*nh)), int(tarwave/(4*nl)),

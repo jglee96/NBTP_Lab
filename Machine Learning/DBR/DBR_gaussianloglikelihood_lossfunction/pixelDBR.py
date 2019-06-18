@@ -29,7 +29,7 @@ def calFWHM(R,wavelength,tarwave):
 
 def reward(R, tarwave, wavelength, bandwidth):
     lband = tarwave - int(bandwidth / 2)
-    uband = tarwave - int(bandwidth / 2)
+    uband = tarwave + int(bandwidth / 2)
     lb_idx = np.where(wavelength == lband)[1][0]
     ub_idx = np.where(wavelength == uband)[1][0]
 

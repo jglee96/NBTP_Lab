@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 import pixelDBR
 from datetime import datetime
+from tensorflow.python.framework import ops
 
 N_pixel = 100
 dx = 5
@@ -14,8 +15,8 @@ minwave = 200
 maxwave = 800
 wavestep = 5
 wavelength = np.array([np.arange(minwave, maxwave, wavestep)])
-tarwave = 400
-bandwidth = 50
+tarwave = 500
+bandwidth = 40
 
 # Base data
 th =tarwave/(4*nh)
@@ -144,6 +145,17 @@ def gen_spect_file():
         np.savetxt(filename, spect, delimiter=',')
         print('======== Spectrum File Saved ========')
 
+def binaryRound(x):
+    """
+    Rounds a tensor whose values are in [0,1] to a tensor with values in {0, 1},
+    using the straight through estimator for the gradient.
+    """
+    g = tf.get_default_graph()
+
+    with ops.name_scope("BinaryRound") as name:
+        with g.gradient_override_map({"Round": "Identity"}):
+            return tf.round(x, name=name)
+
 
 def runOptimizeSimulation():
     trained_saver = tf.train.import_meta_graph(PATH + "/model/FCDNN_2019061420.ckpt.meta")
@@ -151,7 +163,8 @@ def runOptimizeSimulation():
 
     init_list_rand = tf.constant(np.random.randint(2, size=(1, N_pixel)), dtype=tf.float32)
     X = tf.get_variable(name='b', initializer=init_list_rand)
-    Xint = tf.round(X)
+    Xint = binaryRound(X)
+    Xint = tf.clip_by_value(Xint, clip_value_min=0, clip_value_max=1)
     Y = tf.placeholder(tf.float32, shape=[None, OUTPUT_SIZE], name="output_y")
 
     W0 = trained_graph.get_tensor_by_name('dense/kernel:0')
@@ -177,7 +190,7 @@ def runOptimizeSimulation():
     Inval = tf.matmul(Y, tf.transpose(Yhat))
     Outval = tf.matmul((1-Y), tf.transpose(Yhat))
     cost = Outval / Inval
-    optimizer = tf.train.AdamOptimizer(learning_rate=1E-3).minimize(cost, var_list=[X])
+    optimizer = tf.train.AdamOptimizer(learning_rate=3E-3).minimize(cost, var_list=[X])
 
     design_y = pd.read_csv(PATH + "/SpectFile(200,800)_500.csv", header=None)
     design_y = design_y.values
@@ -187,10 +200,28 @@ def runOptimizeSimulation():
         sess.run(tf.global_variables_initializer())
         for n in range(10000):
             sess.run(optimizer, feed_dict={Y: design_y})
-            if (n % 5000) == 0:
-                print("{}th epoch".format(n))
-        optimized_x = X.eval()
+            if (n % 1000) == 0:
+                temp_x = np.reshape(Xint.eval().astype(int), newshape=N_pixel)
+                temp_R = np.reshape(pixelDBR.calR(temp_x, dx, N_pixel, wavelength, nh, nl), newshape=(1, wavelength.shape[1]))
+                temp_reward = pixelDBR.reward(temp_R, tarwave, wavelength, bandwidth)
+                print("{}th epoch, reward: {:.2f}".format(n, temp_reward[0]))
+        optimized_x = np.reshape(Xint.eval().astype(int), newshape=N_pixel)
+        optimized_R = np.reshape(pixelDBR.calR(optimized_x, dx, N_pixel, wavelength, nh, nl), newshape=(1, wavelength.shape[1]))
+        optimized_reward = pixelDBR.reward(optimized_R, tarwave, wavelength, bandwidth)
+    print("Optimized result: {:.2f}".format(optimized_reward[0]))
     print(optimized_x)
+
+    wavelength_x = np.reshape(wavelength, wavelength.shape[1])
+    optimized_R = np.reshape(optimized_R, wavelength.shape[1])
+    plt.figure(1)
+    plt.subplot(2, 1, 1)
+    plt.plot(wavelength_x, optimized_R)
+
+    pixel_x = np.arange(N_pixel)
+    plt.subplot(2, 1, 2)
+    plt.bar(pixel_x, optimized_x, width=1, color="black")
+    plt.show()
+
 if __name__ == "__main__":
     # main()
     # gen_spect_file()

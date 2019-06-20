@@ -10,5 +10,5 @@ def reward(R, tarwave, wavelength, bandwidth):
     R_in = np.mean(R[:, ub_idx:lb_idx+1], axis=1)
     R_out = np.mean(np.hstack((R[:, 0:ub_idx+1], R[:, lb_idx:])), axis=1)
 
-    return  R_in * (1 - R_out)
-    # return R_in / R_out
+    # return  R_in * (1 - R_out)
+    return R_in / R_out

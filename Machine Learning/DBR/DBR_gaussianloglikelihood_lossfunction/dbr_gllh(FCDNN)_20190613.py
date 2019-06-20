@@ -157,7 +157,83 @@ def binaryRound(x):
             return tf.round(x, name=name)
 
 
-def runOptimizeSimulation():
+def DBS_OptimizeSimulation():
+    trained_saver = tf.train.import_meta_graph(PATH + "/model/FCDNN_2019061420.ckpt.meta")
+    trained_graph = tf.get_default_graph()
+
+    X = tf.placeholder(tf.float32, shape=[None, INPUT_SIZE], name="input_x")
+
+    W0 = trained_graph.get_tensor_by_name('dense/kernel:0')
+    b0 = trained_graph.get_tensor_by_name('dense/bias:0')
+    L0 = tf.nn.relu(tf.matmul(X, W0) + b0)
+
+    W1 = trained_graph.get_tensor_by_name('dense_1/kernel:0')
+    b1 = trained_graph.get_tensor_by_name('dense_1/bias:0')
+    L1 = tf.nn.relu(tf.matmul(L0, W1) + b1)
+
+    W2 = trained_graph.get_tensor_by_name('dense_2/kernel:0')
+    b2 = trained_graph.get_tensor_by_name('dense_2/bias:0')
+    L2 = tf.nn.relu(tf.matmul(L1, W2) + b2)
+
+    W3 = trained_graph.get_tensor_by_name('dense_3/kernel:0')
+    b3 = trained_graph.get_tensor_by_name('dense_3/bias:0')
+    L3 = tf.nn.relu(tf.matmul(L2, W3) + b3)
+
+    W4 = trained_graph.get_tensor_by_name('dense_4/kernel:0')
+    b4 = trained_graph.get_tensor_by_name('dense_4/bias:0')
+    Y = tf.add(tf.matmul(L3, W4), b4) # No activation function
+
+    with tf.Session() as sess:
+        trained_saver.restore(sess, PATH + "/model/FCDNN_2019061420.ckpt")
+        for idx in range(1):
+            optimized_x = np.random.randint(2, size=(1, N_pixel))
+            optimized_reward = 0
+            for n in range(500):
+                x = optimized_x
+                for i in range(N_pixel):
+                    # Toggle
+                    x[0][i] = abs(x[0][i] - 1)
+                    R = sess.run(Y, feed_dict={X: x})
+                    R = np.reshape(R, newshape=(1, wavelength.shape[1]))
+                    pre_reward = pixelDBR.reward(R, tarwave, wavelength, bandwidth)[0]
+                    if pre_reward > optimized_reward:
+                        optimized_x = x
+                        optimized_reward = pre_reward
+                    else:
+                        x[0][i] = abs(x[0][i] - 1)
+                    
+                    # Swap
+                    temp_x = x
+                    temp = x[0][i]
+                    x[0][i] = x[0][i-1]
+                    x[0][i-1] = temp
+                    R = sess.run(Y, feed_dict={X: x})
+                    R = np.reshape(R, newshape=(1, wavelength.shape[1]))
+                    pre_reward = pixelDBR.reward(R, tarwave, wavelength, bandwidth)[0]
+                    if pre_reward > optimized_reward:
+                        optimized_x = x
+                        optimized_reward = pre_reward
+                    else:
+                        x = temp_x
+                if (n % 100) == 0:
+                    print("{}th case, {}th epoch, reward: {:.2f}".format(idx, n, optimized_reward))
+        optimized_R = sess.run(Y, feed_dict={X: optimized_x})
+    print("Optimized result: {:.2f}".format(optimized_reward))
+
+    wavelength_x = np.reshape(wavelength, wavelength.shape[1])
+    optimized_R = np.reshape(optimized_R, wavelength.shape[1])
+    plt.figure(1)
+    plt.subplot(2, 1, 1)
+    plt.plot(wavelength_x, optimized_R)
+
+    pixel_x = np.arange(N_pixel)
+    optimized_x = np.reshape(optimized_x, N_pixel)
+    plt.subplot(2, 1, 2)
+    plt.bar(pixel_x, optimized_x, width=1, color="black")
+    plt.show()
+
+
+def Ratio_OptimizeSimulation():
     trained_saver = tf.train.import_meta_graph(PATH + "/model/FCDNN_2019061420.ckpt.meta")
     trained_graph = tf.get_default_graph()
 
@@ -189,7 +265,7 @@ def runOptimizeSimulation():
 
     Inval = tf.matmul(Y, tf.transpose(Yhat))
     Outval = tf.matmul((1-Y), tf.transpose(Yhat))
-    cost = Outval / Inval
+    cost = Inval / Outval
     optimizer = tf.train.AdamOptimizer(learning_rate=3E-3).minimize(cost, var_list=[X])
 
     design_y = pd.read_csv(PATH + "/SpectFile(200,800)_500.csv", header=None)
@@ -197,8 +273,9 @@ def runOptimizeSimulation():
 
     with tf.Session() as sess:
         trained_saver.restore(sess, PATH + "/model/FCDNN_2019061420.ckpt")
-        sess.run(tf.global_variables_initializer())
-        for n in range(10000):
+        # sess.run(tf.global_variables_initializer())
+        sess.run(tf.variables_initializer([X]))
+        for n in range(30000):
             sess.run(optimizer, feed_dict={Y: design_y})
             if (n % 1000) == 0:
                 temp_x = np.reshape(Xint.eval().astype(int), newshape=N_pixel)
@@ -225,4 +302,5 @@ def runOptimizeSimulation():
 if __name__ == "__main__":
     # main()
     # gen_spect_file()
-    runOptimizeSimulation()
+    Ratio_OptimizeSimulation()
+    # DBS_OptimizeSimulation()

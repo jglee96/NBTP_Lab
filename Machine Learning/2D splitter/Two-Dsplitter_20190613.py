@@ -6,13 +6,13 @@ import Two_Dcalculator as TwoCal
 N_pixel = 20
 
 tarwave = 300e-6
-bandwidth = 50e-6
+bandwidth = 10e-6
 
 # Base data
 print("======== Design Information ========")
 print('tarwave: {}um, nh: Si, nl: Air'.format(tarwave))
 
-Nsample = 5000
+Nsample = 9998
 PATH = 'D:/NBTP_Lab/Machine Learning/2D splitter'
 TRAIN_PATH = PATH + '/trainset/02'
 
@@ -61,7 +61,10 @@ def main():
     rP2 = TwoCal.reward(P2, tarwave, wavelength, bandwidth)
     rP3 = TwoCal.reward(P3, tarwave, wavelength, bandwidth)
 
-    FOM = rP2 + rP3 - abs(rP2 - rP3)
+    r = 1
+    # FOM = r*(rP2 + rP3) - (1-r)*abs(rP2 - rP3)
+    # FOM = 1/(rP2/rP3 + rP3/rP2)
+    FOM = rP2
     print("FOM Calculation Success!!")
     FOM_temp = np.reshape(FOM, newshape=(-1, 1))
     rX = X * FOM_temp
@@ -71,11 +74,20 @@ def main():
     rX = rX - minX
     avgX = np.mean(rX)
 
-    result_state = (rX >= avgX).astype(int)
+    result_state = (rX > avgX).astype(int)
     print("Result Calculation Success!!")
 
     result_state = np.transpose(np.reshape(result_state, newshape=(N_pixel, N_pixel)))
-    print(result_state)
+    print_result = result_state.tolist()
+    print('[', end='')
+    for i,  index1 in enumerate(print_result):
+        for j, index2 in enumerate(index1):
+            if j == (N_pixel -1) and i != (N_pixel-1):
+                print(str(index2) + ';')
+            elif j == (N_pixel -1) and i == (N_pixel-1):
+                print(str(index2) + '];')
+            else:
+                print(str(index2) + ',', end='')
 
     plt.imshow(result_state, cmap='gray')
     plt.show()

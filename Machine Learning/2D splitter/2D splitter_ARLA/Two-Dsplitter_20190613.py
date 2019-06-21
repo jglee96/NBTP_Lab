@@ -62,8 +62,9 @@ def main():
     rP3 = TwoCal.reward(P3, tarwave, wavelength, bandwidth)
 
     r = 0.8
-    FOM = r*(rP2 + rP3) - (1-r)*abs(rP2 - rP3)
-    # FOM = 1/(rP2/rP3 + rP3/rP2)
+    # FOM = r*(rP2 + rP3) - (1-r)*abs(rP2 - rP3) #linear
+    # FOM = 1/(rP2/rP3 + rP3/rP2) #
+    FOM = 1 - np.sqrt(((rP2 - 1)**2 + (rP3 - 1)**2))
     # FOM = rP2
     print("FOM Calculation Success!!")
     FOM_temp = np.reshape(FOM, newshape=(-1, 1))

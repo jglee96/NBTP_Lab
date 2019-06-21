@@ -12,7 +12,7 @@ bandwidth = 10e-6
 print("======== Design Information ========")
 print('tarwave: {}um, nh: Si, nl: Air'.format(tarwave))
 
-Nsample = 9998
+Nsample = 14996
 PATH = 'D:/NBTP_Lab/Machine Learning/2D splitter'
 TRAIN_PATH = PATH + '/trainset/02'
 

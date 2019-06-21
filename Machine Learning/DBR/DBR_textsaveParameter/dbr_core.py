@@ -1,5 +1,18 @@
 import tensorflow as tf
 import numpy as np
+from tensorflow.python.framework import ops
+
+def binaryRound(x):
+    """
+    Rounds a tensor whose values are in [0,1] to a tensor with values in {0, 1},
+    using the straight through estimator for the gradient.
+    ref: https://r2rt.com/binary-stochastic-neurons-in-tensorflow.html
+    """
+    g = tf.get_default_graph()
+
+    with ops.name_scope("BinaryRound") as name:
+        with g.gradient_override_map({"Round": "Identity"}):
+            return tf.round(x, name=name)
 
 #As per Xaiver init, this should be 2/n(input), though many different initializations can be tried. 
 def init_weights(shape,stddev=.1):
@@ -32,15 +45,11 @@ def load_weights(output_folder,weight_load_name,num_layers):
         biases.append(b_i)
     return weights , biases
 
-def forwardprop(X, weights, biases, num_layers, dropout=False, minLimit=None, maxLimit=None):
-    if minLimit is not None:
-        X = tf.maximum(X, minLimit)
-        X = tf.minimum(X, maxLimit)
-    htemp = None
+def forwardprop(X, weights, biases, num_layers,):
     for i in range(0, num_layers):
         if i ==0:
-            htemp = tf.nn.relu(tf.add(tf.matmul(X, weights[i]), biases[i]))
+            htemp = tf.nn.sigmoid(tf.add(tf.matmul(X, weights[i]), biases[i]))
         else:
-            htemp = tf.nn.relu(tf.add(tf.matmul(htemp, weights[i]), biases[i]))
+            htemp = tf.nn.sigmoid(tf.add(tf.matmul(htemp, weights[i]), biases[i]))
     yval = tf.add(tf.matmul(htemp, weights[-1]), biases[-1])
     return yval

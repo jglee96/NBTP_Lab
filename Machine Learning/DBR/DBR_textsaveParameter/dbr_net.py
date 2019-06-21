@@ -51,7 +51,47 @@ def getData():
 def Ratio_Optimization(output_folder, weight_name_save, n_batch, lr_rate, num_layers, n_hidden):
     init_list_rand = tf.constant(np.random.randint(2, size=(1, N_pixel)), dtype=tf.float32)
     X = tf.get_variable(name='b', initializer=init_list_rand)
+    Xint = binaryRound(X)
+    Xint = tf.clip_by_value(Xint, clip_value_min=0, clip_value_max=1)
+    Y = tf.placeholder(tf.float32, shape=[None, OUTPUT_SIZE], name="output_y")
     weights, biases = load_weights(output_folder, weight_name_save, num_layers)
+    Yhat = forwardprop(Xint, weights, biases, num_layers)
+
+    Inval = tf.matmul(Y, tf.transpose(Yhat))
+    Outval = tf.matmul((1-Y), tf.transpose(Yhat))
+    # cost = Inval / Outval
+    cost = Outval / Inval
+    optimizer = tf.train.AdamOptimizer(learning_rate=1E-3).minimize(cost, var_list=[X])
+
+    design_y = pd.read_csv(PATH + "/SpectFile(200,800)_500.csv", header=None)
+    design_y = design_y.values
+
+    with tf.Session() as sess:
+        sess.run(tf.global_variables_initializer())
+        for n in range(10000):
+            sess.run(optimizer, feed_dict={Y: design_y})
+            if (n % 100) == 0:
+                temp_R = np.reshape(sess.run(Yhat), newshape=(1, wavelength.shape[1]))
+                temp_cost = sess.run(cost, feed_dict={Y: design_y})[0][0]
+                temp_reward = pixelDBR.reward(temp_R, tarwave, wavelength, bandwidth)
+                print("{}th epoch, reward: {:.4f}, cost: {:.4f}".format(n, temp_reward[0], temp_cost))
+        optimized_x = np.reshape(Xint.eval().astype(int), newshape=N_pixel)
+        # optimized_R = np.reshape(sess.run(Yhat), newshape=(1, wavelength.shape[1]))
+        optimized_R = np.reshape(pixelDBR.calR(optimized_x, dx, N_pixel, wavelength, nh, nl), newshape=(1, wavelength.shape[1]))
+        optimized_reward = pixelDBR.reward(optimized_R, tarwave, wavelength, bandwidth)
+    print("Optimized result: {:.4f}".format(optimized_reward[0]))
+    print(optimized_x)
+
+    wavelength_x = np.reshape(wavelength, wavelength.shape[1])
+    optimized_R = np.reshape(optimized_R, wavelength.shape[1])
+    plt.figure(1)
+    plt.subplot(2, 1, 1)
+    plt.plot(wavelength_x, optimized_R)
+
+    pixel_x = np.arange(N_pixel)
+    plt.subplot(2, 1, 2)
+    plt.bar(pixel_x, optimized_x, width=1, color="black")
+    plt.show()
     
 
 def main(output_folder, weight_name_save, n_batch, lr_rate, num_layers, n_hidden):
@@ -151,4 +191,5 @@ if __name__=="__main__":
             'n_hidden':int(dict['n_hidden'])
             }
 
-    main(**kwargs)
+    # main(**kwargs)
+    Ratio_Optimization(**kwargs)

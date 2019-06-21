@@ -25,7 +25,7 @@ def getData():
     sname = TRAIN_PATH + '/index.csv'
     Xtemp = pd.read_csv(sname, header=None, dtype=object)
     Xstrarray = Xtemp.values
-    for i in range(Nsample - 1):
+    for i in range(Nsample):
         temp = Xstrarray[i][0]
         # temp = temp.replace(str(i+1), "", 1)
         temp = list(map(int, temp))
@@ -61,10 +61,10 @@ def main():
     rP2 = TwoCal.reward(P2, tarwave, wavelength, bandwidth)
     rP3 = TwoCal.reward(P3, tarwave, wavelength, bandwidth)
 
-    r = 1
-    # FOM = r*(rP2 + rP3) - (1-r)*abs(rP2 - rP3)
+    r = 0.8
+    FOM = r*(rP2 + rP3) - (1-r)*abs(rP2 - rP3)
     # FOM = 1/(rP2/rP3 + rP3/rP2)
-    FOM = rP2
+    # FOM = rP2
     print("FOM Calculation Success!!")
     FOM_temp = np.reshape(FOM, newshape=(-1, 1))
     rX = X * FOM_temp
@@ -77,7 +77,7 @@ def main():
     result_state = (rX > avgX).astype(int)
     print("Result Calculation Success!!")
 
-    result_state = np.transpose(np.reshape(result_state, newshape=(N_pixel, N_pixel)))
+    result_state = np.transpose(np.reshape(result_state, newshape=(N_pixel, N_pixel))) # the simulation index order = (j, i)
     print_result = result_state.tolist()
     print('[', end='')
     for i,  index1 in enumerate(print_result):

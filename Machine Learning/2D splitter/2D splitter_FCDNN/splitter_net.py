@@ -118,55 +118,75 @@ def main(output_folder, weight_name_save, n_batch, lr_rate, num_layers, n_hidden
     OUTPUT_SIZE = wavelength.shape[1]
 
     ## Define NN ##
-    X = tf.placeholder(tf.float32, [None, INPUT_SIZE], name="input_x")
-    P2 = tf.placeholder(tf.float32, [None, OUTPUT_SIZE], name="output_port2")
-    P3 = tf.placeholder(tf.float32, [None, OUTPUT_SIZE], name="output_port3")
+    g1 = tf.Graph()  # port2 NN
     P2weights = []
     P2biases = []
+
+    g2 = tf.Graph()  # port3 NN
     P3weights = []
     P3biases = []
-    NN_P2 = Splitter
-    NN_P3 = Splitter
 
-    for i in range(0,num_layers):
-        if i == 0:
-            P2weights.append(NN_P2.init_weights((INPUT_SIZE, n_hidden)))
-            P3weights.append(NN_P3.init_weights((INPUT_SIZE, n_hidden)))
-        else:
-            P2weights.append(NN_P2init_weights((n_hidden, n_hidden)))
-            P3weights.append(NN_P3init_weights((n_hidden, n_hidden)))
-        P2biases.append(NN_P2.init_bias(n_hidden))
-        P3biases.append(NN_P3.init_bias(n_hidden))
-    P2weights.append(NN_P2.init_weights((n_hidden, OUTPUT_SIZE)))
-    P2biases.append(NN_P2.init_bias(OUTPUT_SIZE))
-    P3weights.append(NN_P3.init_weights((n_hidden, OUTPUT_SIZE)))
-    P3biases.append(NN_P3.init_bias(OUTPUT_SIZE))
+    with g1.as_default() as g:
+        with g.name_scope("g1") as scope:
+            X2 = tf.placeholder(tf.float32, [None, INPUT_SIZE])
+            P2 = tf.placeholder(tf.float32, [None, OUTPUT_SIZE])
 
-    # Forward propagation
-    P2hat = NN_P2.forwardprop(X, weights, biases, num_layers)
-    P3hat = NN_P3.forwardprop(X, weights, biases, num_layers)
-    P2loss = tf.reduce_sum(tf.square(P2-P2hat))
-    P3loss = tf.reduce_sum(tf.square(P3-P3hat))
-    P2train = tf.train.AdamOptimizer(learning_rate=lr_rate).minimize(P2loss)
-    P3train = tf.train.AdamOptimizer(learning_rate=lr_rate).minimize(P3loss)
+            for i in range(0, num_layers):
+                if i == 0:
+                    P2weights.append(.init_weights((INPUT_SIZE, n_hidden)))
+                else:
+                    P2weights.append(init_weights((n_hidden, n_hidden)))
+                P2biases.append(init_bias(n_hidden))
+            P2weights.append(init_weights((n_hidden, OUTPUT_SIZE)))
+            P2biases.append(init_bias(OUTPUT_SIZE))
+            # Forward propagation
+            P2hat = forwardprop(X, P2weights, P2biases, num_layers)
+            P2loss = tf.reduce_sum(tf.square(P2-P2hat))
+            P2train = tf.train.AdamOptimizer(learning_rate=lr_rate).minimize(P2loss)
 
-    with tf.Session() as sess:
+    with g2.as_default() as g:
+        with g.name_scope("g2") as scope:
+            X3 = tf.placeholder(tf.float32, [None, INPUT_SIZE])
+            P3 = tf.placeholder(tf.float32, [None, OUTPUT_SIZE])
+
+            for i in range(0, num_layers):
+                if i == 0:
+                    P3weights.append(init_weights((INPUT_SIZE, n_hidden)))
+                else:
+                    P3weights.append(init_weights((n_hidden, n_hidden)))
+                P3biases.append(init_bias(n_hidden))
+            P3weights.append(init_weights((n_hidden, OUTPUT_SIZE)))
+            P3biases.append(init_bias(OUTPUT_SIZE))
+            # Forward propagation
+            P3hat = NN_P3.forwardprop(X, P3weights, P3biases, num_layers)
+            P3loss = tf.reduce_sum(tf.square(P3-P3hat))
+            P3train = tf.train.AdamOptimizer(learning_rate=lr_rate).minimize(P3loss)
+
+    with tf.Session(graph=g1) as sess:
         sess.run(tf.global_variables_initializer())
 
         # Training
         for n in range(int(Nsample/n_batch)):
             input_X = np.reshape(sX[n*n_batch:(n+1)*n_batch], [n_batch, INPUT_SIZE])
             output_P2 = np.reshape(P2[n*n_batch:(n+1)*n_batch], [n_batch, OUTPUT_SIZE])
-            output_P3 = np.reshape(P3[n*n_batch:(n+1)*n_batch], [n_batch, OUTPUT_SIZE])
             feed2 = {X: input_X, Y: output_P2}
-            feed3 = {X: input_X, Y: output_P3}
             sess.run(P2train, feed_dict=feed2)
-            sess.run(P3train, feed_dict=feed3)
 
         # Save
-        save_weights(weights, biases, output_folder, weight_name_save, num_layers)
+        save_weights(P2weights, P2biases, output_folder + "/P2", weight_name_save, num_layers)
 
-        # Test
+    with tf.Session(graph=g2) as sess:
+        sess.run(tf.global_variables_initializer())
+
+        # Training
+        for n in range(int(Nsample/n_batch)):
+            input_X = np.reshape(sX[n*n_batch:(n+1)*n_batch], [n_batch, INPUT_SIZE])
+            output_P3 = np.reshape(P3[n*n_batch:(n+1)*n_batch], [n_batch, OUTPUT_SIZE])
+            feed3 = {X: input_X, Y: output_P3}
+            sess.run(P2train, feed_dict=feed3)
+
+        # Save
+        save_weights(P3weights, P3biases, output_folder + "/P3", weight_name_save, num_layers)
 
 
 

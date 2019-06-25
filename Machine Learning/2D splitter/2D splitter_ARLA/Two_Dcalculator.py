@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def reward(R, tarwave, wavelength, bandwidth):
+def band_reward(R, tarwave, wavelength, bandwidth):
     lband = tarwave - (bandwidth / 2)
     uband = tarwave + (bandwidth / 2)
     lb_idx = np.where(abs(wavelength - lband) <= 1E-6)[0][0]
@@ -12,3 +12,11 @@ def reward(R, tarwave, wavelength, bandwidth):
 
     # return  R_in * (1 - R_out)
     return R_in / R_out
+
+def target_reward(R, tarwave, wavelength):
+    target_idx = np.where(abs(wavelength - tarwave) <= 1E-6)[0][0]
+
+    R_target = R[:, target_idx]
+
+    # return  R_in * (1 - R_out)
+    return R_target

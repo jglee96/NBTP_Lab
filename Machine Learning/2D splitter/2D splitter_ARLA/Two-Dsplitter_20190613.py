@@ -13,7 +13,7 @@ print("======== Design Information ========")
 print('tarwave: {}um, nh: Si, nl: Air'.format(tarwave))
 
 Nsample = 14996
-PATH = 'D:/NBTP_Lab/Machine Learning/2D splitter'
+PATH = 'D:/NBTP_Lab/Machine Learning/2D splitter/2D splitter_ARLA'
 TRAIN_PATH = PATH + '/trainset/02'
 
 def getData():
@@ -57,14 +57,17 @@ def main():
     X, _, P2, P3, wavelength = getData()
     print("Load Data Success!!")
 
-    # rP1 = TwoCal.reward(P1, tarwave, wavelength, bandwidth)
-    rP2 = TwoCal.reward(P2, tarwave, wavelength, bandwidth)
-    rP3 = TwoCal.reward(P3, tarwave, wavelength, bandwidth)
+    # rP1 = TwoCal.band_reward(P1, tarwave, wavelength, bandwidth)
+    # rP2 = TwoCal.band_reward(P2, tarwave, wavelength, bandwidth)
+    # rP3 = TwoCal.band_reward(P3, tarwave, wavelength, bandwidth)
+    rP2 = TwoCal.target_reward(P2, tarwave, wavelength)
+    rP3 = TwoCal.target_reward(P3, tarwave, wavelength)
 
     r = 0.8
+    center_fact = 0.25
     # FOM = r*(rP2 + rP3) - (1-r)*abs(rP2 - rP3) #linear
     # FOM = 1/(rP2/rP3 + rP3/rP2) #
-    FOM = 1 - np.sqrt(((rP2 - 1)**2 + (rP3 - 1)**2))
+    FOM = 1 - np.sqrt(((rP2 - center_fact)**2 + (rP3 - center_fact)**2))
     # FOM = rP2
     print("FOM Calculation Success!!")
     FOM_temp = np.reshape(FOM, newshape=(-1, 1))

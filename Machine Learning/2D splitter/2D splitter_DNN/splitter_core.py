@@ -73,3 +73,5 @@ def ResNet_forwardprop(X, weights, biases, RNnum_block):
         htemp = tf.nn.sigmoid(tf.add(tf.add(tf.matmul(htemp, weights[2*i+2]), biases[2*i+2]), htemp))
     yval = tf.add(tf.matmul(htemp, weights[-1]), biases[-1])
     return yval
+
+## DenseNet

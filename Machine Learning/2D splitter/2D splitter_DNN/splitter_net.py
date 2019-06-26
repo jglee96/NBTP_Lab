@@ -69,7 +69,10 @@ def getData():
     return sX, P1, P2, P3, wavelength
 
 
-def Ratio_Optimization(output_folder, weight_name_save, n_batch, lr_rate, num_layers, RNnum_block, n_hidden):
+def Ratio_Optimization(
+    output_folder, weight_name_save, n_batch, lr_rate,
+    num_layers, RNnum_block, n_hidden, DNN_mode):
+
     init_list_rand = tf.constant(np.random.randint(2, size=(1, INPUT_SIZE)), dtype=tf.float32)
     X = tf.get_variable(name='b', initializer=init_list_rand)
     Xint = binaryRound(X)
@@ -92,8 +95,8 @@ def Ratio_Optimization(output_folder, weight_name_save, n_batch, lr_rate, num_la
     P2 = 1 / P2Inval
     P3 = 1 / P3Inval
 
-    # cost = tf.sqrt(P2*P2 + P3*P3)
-    cost = P2 + P3
+    cost = tf.sqrt(P2*P2 + P3*P3)
+    # cost = P2 + P3
     # Optimizer
     global_step = tf.Variable(0, trainable=False)
     learning_rate = tf.train.exponential_decay(
@@ -136,7 +139,10 @@ def Ratio_Optimization(output_folder, weight_name_save, n_batch, lr_rate, num_la
     plt.show()
     
 
-def main(output_folder, weight_name_save, n_batch, lr_rate, lr_decay, num_layers, RNnum_block, n_hidden):
+def main(
+    output_folder, weight_name_save, n_batch, lr_rate,
+    lr_decay, num_layers, RNnum_block, n_hidden, DNN_mode):
+    
     # Load training data
     sX, _, sP2, sP3, wavelength = getData()
 
@@ -154,40 +160,37 @@ def main(output_folder, weight_name_save, n_batch, lr_rate, lr_decay, num_layers
             X2 = tf.placeholder(tf.float32, [None, INPUT_SIZE])
             P2 = tf.placeholder(tf.float32, [None, OUTPUT_SIZE])
 
-            '''
-            ## FCDNN init
-            for i in range(0, num_layers):
-                if i == 0:
-                    P2weights.append(init_weights((INPUT_SIZE, n_hidden)))
-                else:
+            if DNN_mode == 0:
+                ## FCDNN init
+                for i in range(0, num_layers):
+                    if i == 0:
+                        P2weights.append(init_weights((INPUT_SIZE, n_hidden)))
+                    else:
+                        P2weights.append(init_weights((n_hidden, n_hidden)))
+                    P2biases.append(init_bias(n_hidden))
+                P2weights.append(init_weights((n_hidden, OUTPUT_SIZE)))
+                P2biases.append(init_bias(OUTPUT_SIZE))
+
+                ## Forward propagation
+                P2hat = FCDNN_forwardprop(X2, P2weights, P2biases, num_layers)
+            elif DNN_mode == 1:
+                ## ResNet init
+                # input
+                P2weights.append(init_weights((INPUT_SIZE, n_hidden)))
+                P2biases.append(init_bias(n_hidden))
+                for i in range(0,RNnum_block):
+                    # 1st
                     P2weights.append(init_weights((n_hidden, n_hidden)))
-                P2biases.append(init_bias(n_hidden))
-            P2weights.append(init_weights((n_hidden, OUTPUT_SIZE)))
-            P2biases.append(init_bias(OUTPUT_SIZE))
+                    P2biases.append(init_bias(n_hidden))
+                    # 2nd
+                    P2weights.append(init_weights((n_hidden, n_hidden)))
+                    P2biases.append(init_bias(n_hidden))
+                # output
+                P2weights.append(init_weights((n_hidden, OUTPUT_SIZE)))
+                P2biases.append(init_bias(OUTPUT_SIZE))
 
-            ## Forward propagation
-            P2hat = FCDNN_forwardprop(X2, P2weights, P2biases, num_layers)
-            '''
-
-            # '''
-            ## ResNet init
-            # input
-            P2weights.append(init_weights((INPUT_SIZE, n_hidden)))
-            P2biases.append(init_bias(n_hidden))
-            for i in range(0,RNnum_block):
-                # 1st
-                P2weights.append(init_weights((n_hidden, n_hidden)))
-                P2biases.append(init_bias(n_hidden))
-                # 2nd
-                P2weights.append(init_weights((n_hidden, n_hidden)))
-                P2biases.append(init_bias(n_hidden))
-            # output
-            P2weights.append(init_weights((n_hidden, OUTPUT_SIZE)))
-            P2biases.append(init_bias(OUTPUT_SIZE))
-
-            ## Forward propagation
-            P2hat = ResNet_forwardprop(X2, P2weights, P2biases, RNnum_block)
-            # '''
+                ## Forward propagation
+                P2hat = ResNet_forwardprop(X2, P2weights, P2biases, RNnum_block)
             
             ## Optimization
             # P2loss = tf.reduce_mean(tf.square(P2-P2hat))
@@ -205,40 +208,38 @@ def main(output_folder, weight_name_save, n_batch, lr_rate, lr_decay, num_layers
             X3 = tf.placeholder(tf.float32, [None, INPUT_SIZE])
             P3 = tf.placeholder(tf.float32, [None, OUTPUT_SIZE])
 
-            '''
-            ## FCDNN init
-            for i in range(0, num_layers):
-                if i == 0:
-                    P3weights.append(init_weights((INPUT_SIZE, n_hidden)))
-                else:
+            if DNN_mode == 0:
+                ## FCDNN init
+                for i in range(0, num_layers):
+                    if i == 0:
+                        P3weights.append(init_weights((INPUT_SIZE, n_hidden)))
+                    else:
+                        P3weights.append(init_weights((n_hidden, n_hidden)))
+                    P3biases.append(init_bias(n_hidden))
+                P3weights.append(init_weights((n_hidden, OUTPUT_SIZE)))
+                P3biases.append(init_bias(OUTPUT_SIZE))
+
+                ## Forward propagation
+                P3hat = FCDNN_forwardprop(X3, P3weights, P3biases, num_layers)
+
+            elif DNN_mode == 1:
+                ## ResNet init
+                # input
+                P3weights.append(init_weights((INPUT_SIZE, n_hidden)))
+                P3biases.append(init_bias(n_hidden))
+                for i in range(0,RNnum_block):
+                    # 1st
                     P3weights.append(init_weights((n_hidden, n_hidden)))
-                P3biases.append(init_bias(n_hidden))
-            P3weights.append(init_weights((n_hidden, OUTPUT_SIZE)))
-            P3biases.append(init_bias(OUTPUT_SIZE))
+                    P3biases.append(init_bias(n_hidden))
+                    # 2nd
+                    P3weights.append(init_weights((n_hidden, n_hidden)))
+                    P3biases.append(init_bias(n_hidden))
+                # output
+                P3weights.append(init_weights((n_hidden, OUTPUT_SIZE)))
+                P3biases.append(init_bias(OUTPUT_SIZE))
 
-            ## Forward propagation
-            P3hat = FCDNN_forwardprop(X3, P3weights, P3biases, num_layers)
-            '''
-
-            # '''
-            ## ResNet init
-            # input
-            P3weights.append(init_weights((INPUT_SIZE, n_hidden)))
-            P3biases.append(init_bias(n_hidden))
-            for i in range(0,RNnum_block):
-                # 1st
-                P3weights.append(init_weights((n_hidden, n_hidden)))
-                P3biases.append(init_bias(n_hidden))
-                # 2nd
-                P3weights.append(init_weights((n_hidden, n_hidden)))
-                P3biases.append(init_bias(n_hidden))
-            # output
-            P3weights.append(init_weights((n_hidden, OUTPUT_SIZE)))
-            P3biases.append(init_bias(OUTPUT_SIZE))
-
-            ## Forward propagation
-            P3hat = ResNet_forwardprop(X3, P3weights, P3biases, RNnum_block)
-            # '''
+                ## Forward propagation
+                P3hat = ResNet_forwardprop(X3, P3weights, P3biases, RNnum_block)
 
             ## Optimization
             # P3loss = tf.reduce_mean(tf.square(P3-P3hat))
@@ -264,8 +265,10 @@ def main(output_folder, weight_name_save, n_batch, lr_rate, lr_decay, num_layers
             P2trainloss.append(sess.run(P2loss, feed_dict=feed2))
 
         # Save
-        # FCDNN_save_weights(P2weights, P2biases, output_folder + "/FCDNN/P2", weight_name_save, num_layers)
-        ResNet_save_weights(P2weights, P2biases, output_folder + "/ResNet/P2", weight_name_save, RNnum_block)
+        if DNN_mode == 0:
+            FCDNN_save_weights(P2weights, P2biases, output_folder + "/FCDNN/P2", weight_name_save, num_layers)
+        elif DNN_mode == 1:
+            ResNet_save_weights(P2weights, P2biases, output_folder + "/ResNet/P2", weight_name_save, RNnum_block)
         
         P2testloss = []
         # Test
@@ -300,8 +303,10 @@ def main(output_folder, weight_name_save, n_batch, lr_rate, lr_decay, num_layers
             P3trainloss.append(sess.run(P3loss, feed_dict=feed3))
 
         # Save
-        # FCDNN_save_weights(P3weights, P3biases, output_folder + "/FCDNN/P3", weight_name_save, num_layers)
-        ResNet_save_weights(P3weights, P3biases, output_folder + "/ResNet/P3", weight_name_save, RNnum_block)
+        if DNN_mode == 0:
+            FCDNN_save_weights(P3weights, P3biases, output_folder + "/FCDNN/P3", weight_name_save, num_layers)
+        elif DNN_mode == 1:
+            ResNet_save_weights(P3weights, P3biases, output_folder + "/ResNet/P3", weight_name_save, RNnum_block)
         
         P3testloss = []
         # Test
@@ -328,6 +333,8 @@ def main(output_folder, weight_name_save, n_batch, lr_rate, lr_decay, num_layers
     plt.figure(4)
     plt.plot(P2testloss)
     plt.plot(P3testloss)
+    print(P2testloss)
+    print(P3testloss)
     plt.show()
 
 
@@ -340,8 +347,9 @@ if __name__=="__main__":
     parser.add_argument("--lr_rate", type=float, default=1E-2)
     parser.add_argument("--lr_decay", type=float, default=0.9)
     parser.add_argument("--num_layers", default=4)
-    parser.add_argument("--RNnum_block", default=8)
-    parser.add_argument("--n_hidden", default=150)
+    parser.add_argument("--RNnum_block", default=4)
+    parser.add_argument("--n_hidden", default=120)
+    parser.add_argument("--DNN_mode", default=1) # 0: FCDNN, 1: ResNet, 2: DenseNet
 
     args = parser.parse_args()
     dict = vars(args)
@@ -369,7 +377,8 @@ if __name__=="__main__":
             'lr_decay':dict['lr_decay'],
             'num_layers':int(dict['num_layers']),
             'RNnum_block':int(dict['RNnum_block']),
-            'n_hidden':int(dict['n_hidden'])
+            'n_hidden':int(dict['n_hidden']),
+            'DNN_mode':int(dict['DNN_mode'])
             }
 
     main(**kwargs)

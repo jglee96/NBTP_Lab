@@ -12,11 +12,11 @@ OUTPUT_SIZE = 100
 tarwave = 500
 bandwidth = 40
 
-Nsample = 10000
-Nr = 0.8
+Nsample = 14996
+Nr = 0.99
 Nlearning = int(Nr*Nsample)
 Ntest = int((1-Nr)*Nsample)
-PATH = 'D:/NBTP_Lab/Machine Learning/2D splitter/2D splitter_FCDNN'
+PATH = 'D:/NBTP_Lab/Machine Learning/2D splitter/2D splitter_DNN'
 TRAIN_PATH = PATH + '/trainset/02'
 
 def binaryRound(x):
@@ -136,7 +136,7 @@ def Ratio_Optimization(output_folder, weight_name_save, n_batch, lr_rate, num_la
     plt.show()
     
 
-def main(output_folder, weight_name_save, n_batch, lr_rate, num_layers, RNnum_block, n_hidden):
+def main(output_folder, weight_name_save, n_batch, lr_rate, lr_decay, num_layers, RNnum_block, n_hidden):
     # Load training data
     sX, _, sP2, sP3, wavelength = getData()
 
@@ -169,7 +169,7 @@ def main(output_folder, weight_name_save, n_batch, lr_rate, num_layers, RNnum_bl
             P2hat = FCDNN_forwardprop(X2, P2weights, P2biases, num_layers)
             '''
 
-            #'''
+            # '''
             ## ResNet init
             # input
             P2weights.append(init_weights((INPUT_SIZE, n_hidden)))
@@ -187,10 +187,18 @@ def main(output_folder, weight_name_save, n_batch, lr_rate, num_layers, RNnum_bl
 
             ## Forward propagation
             P2hat = ResNet_forwardprop(X2, P2weights, P2biases, RNnum_block)
-            #'''
-
-            P2loss = tf.reduce_mean(tf.square(P2-P2hat))
-            P2train = tf.train.AdamOptimizer(learning_rate=lr_rate).minimize(P2loss)
+            # '''
+            
+            ## Optimization
+            # P2loss = tf.reduce_mean(tf.square(P2-P2hat))
+            P2loss = tf.losses.huber_loss(labels=P2, predictions=P2hat, delta=0.2)
+            # P2train = tf.train.AdamOptimizer(learning_rate=lr_rate).minimize(P2loss)
+            global_step = tf.Variable(0, trainable=False)
+            learning_rate = tf.train.exponential_decay(
+                lr_rate, global_step, 100, lr_decay, staircase=False)
+            P2train = tf.train.RMSPropOptimizer(
+                learning_rate=learning_rate).minimize(
+                    P2loss, global_step=global_step)
 
     with g2.as_default() as g:
         with g.name_scope("g2") as scope:
@@ -212,7 +220,7 @@ def main(output_folder, weight_name_save, n_batch, lr_rate, num_layers, RNnum_bl
             P3hat = FCDNN_forwardprop(X3, P3weights, P3biases, num_layers)
             '''
 
-            #'''
+            # '''
             ## ResNet init
             # input
             P3weights.append(init_weights((INPUT_SIZE, n_hidden)))
@@ -230,11 +238,18 @@ def main(output_folder, weight_name_save, n_batch, lr_rate, num_layers, RNnum_bl
 
             ## Forward propagation
             P3hat = ResNet_forwardprop(X3, P3weights, P3biases, RNnum_block)
-            #'''
+            # '''
 
             ## Optimization
-            P3loss = tf.reduce_mean(tf.square(P3-P3hat))
-            P3train = tf.train.AdamOptimizer(learning_rate=lr_rate).minimize(P3loss)
+            # P3loss = tf.reduce_mean(tf.square(P3-P3hat))
+            P3loss = tf.losses.huber_loss(labels=P3, predictions=P3hat, delta=0.2)
+            # P3train = tf.train.AdamOptimizer(learning_rate=lr_rate).minimize(P3loss)
+            global_step = tf.Variable(0, trainable=False)
+            learning_rate = tf.train.exponential_decay(
+                lr_rate, global_step, 100, lr_decay, staircase=False)
+            P3train = tf.train.RMSPropOptimizer(
+                learning_rate=learning_rate).minimize(
+                    P3loss, global_step=global_step)
 
     with tf.Session(graph=g1) as sess:
         sess.run(tf.global_variables_initializer())
@@ -263,6 +278,12 @@ def main(output_folder, weight_name_save, n_batch, lr_rate, num_layers, RNnum_bl
                 [n_batch, OUTPUT_SIZE])
             feed2 = {X2: input_X, P2: output_P2}
             P2testloss.append(sess.run(P2loss, feed_dict=feed2))
+        P2test = np.reshape(sess.run(P2hat, feed_dict={X2: np.reshape(sX[0, :], [1, INPUT_SIZE])}), OUTPUT_SIZE)
+        plt.figure(1)
+        plt.subplot(2, 1, 1)
+        plt.plot(P2test)
+        plt.subplot(2, 1, 2)
+        plt.plot(np.reshape(sP2[0, :], OUTPUT_SIZE))
 
     with tf.Session(graph=g2) as sess:
         sess.run(tf.global_variables_initializer())
@@ -293,26 +314,34 @@ def main(output_folder, weight_name_save, n_batch, lr_rate, num_layers, RNnum_bl
                 [n_batch, OUTPUT_SIZE])
             feed3 = {X3: input_X, P3: output_P3}
             P3testloss.append(sess.run(P3loss, feed_dict=feed3))
-        plt.figure(1)
-        plt.plot(P2trainloss)
-        plt.plot(P3trainloss)
-        
+        P3test = np.reshape(sess.run(P3hat, feed_dict={X3: np.reshape(sX[0, :], [1, INPUT_SIZE])}), OUTPUT_SIZE)
         plt.figure(2)
-        plt.plot(P2testloss)
-        plt.plot(P3testloss)
-        plt.show()
+        plt.subplot(2, 1, 1)
+        plt.plot(P3test)
+        plt.subplot(2, 1, 2)
+        plt.plot(np.reshape(sP3[0, :], OUTPUT_SIZE))
+
+    plt.figure(3)
+    plt.plot(P2trainloss)
+    plt.plot(P3trainloss)
+    
+    plt.figure(4)
+    plt.plot(P2testloss)
+    plt.plot(P3testloss)
+    plt.show()
 
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser(
         description="Physics Net Training")
-    parser.add_argument("--output_folder",type=str, default='D:/NBTP_Lab/Machine Learning/2D splitter/2D splitter_FCDNN/NN_parameter')
+    parser.add_argument("--output_folder",type=str, default='D:/NBTP_Lab/Machine Learning/2D splitter/2D splitter_DNN/NN_parameter')
     parser.add_argument("--weight_name_save", type=str, default="")
     parser.add_argument("--n_batch", type=int, default=100)
-    parser.add_argument("--lr_rate", type=float, default=1E-3)
-    parser.add_argument("--num_layers", default=8)
+    parser.add_argument("--lr_rate", type=float, default=1E-2)
+    parser.add_argument("--lr_decay", type=float, default=0.9)
+    parser.add_argument("--num_layers", default=4)
     parser.add_argument("--RNnum_block", default=8)
-    parser.add_argument("--n_hidden", default=100)
+    parser.add_argument("--n_hidden", default=150)
 
     args = parser.parse_args()
     dict = vars(args)
@@ -337,6 +366,7 @@ if __name__=="__main__":
             'weight_name_save':dict['weight_name_save'],
             'n_batch':dict['n_batch'],
             'lr_rate':dict['lr_rate'],
+            'lr_decay':dict['lr_decay'],
             'num_layers':int(dict['num_layers']),
             'RNnum_block':int(dict['RNnum_block']),
             'n_hidden':int(dict['n_hidden'])

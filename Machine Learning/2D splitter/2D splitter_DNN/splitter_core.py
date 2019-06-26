@@ -14,34 +14,13 @@ def init_bias(shape, stddev=.1):
     biases = tf.random_normal([shape], stddev=stddev)
     return tf.Variable(biases)
 
+## FCDNN
 def FCDNN_save_weights(weights, biases, output_folder, weight_name_save, num_layers):
     for i in range(0, num_layers+1):
         weight_i = weights[i].eval()
         np.savetxt(output_folder+weight_name_save+"/w_"+str(i)+".txt",weight_i, delimiter=',')
         bias_i = biases[i].eval()
         np.savetxt(output_folder+weight_name_save+"/b_"+str(i)+".txt",bias_i, delimiter=',')
-
-def ResNet_save_weights(weights, biases, output_folder, weight_name_save, RNnum_block):
-    weight_i = weights[0].eval()
-    np.savetxt(output_folder+weight_name_save+"/w_"+str(0)+".txt",weight_i, delimiter=',')
-    bias_i = biases[0].eval()
-    np.savetxt(output_folder+weight_name_save+"/b_"+str(0)+".txt",bias_i, delimiter=',')
-
-    for i in range(0, RNnum_block):
-        weight_i = weights[2*i+1].eval()
-        np.savetxt(output_folder+weight_name_save+"/w_"+str(2*i+1)+".txt",weight_i, delimiter=',')
-        bias_i = biases[2*i+1].eval()
-        np.savetxt(output_folder+weight_name_save+"/b_"+str(2*i+1)+".txt",bias_i, delimiter=',')
-
-        weight_i = weights[2*i+2].eval()
-        np.savetxt(output_folder+weight_name_save+"/w_"+str(2*i+2)+".txt",weight_i, delimiter=',')
-        bias_i = biases[2*i+2].eval()
-        np.savetxt(output_folder+weight_name_save+"/b_"+str(2*i+2)+".txt",bias_i, delimiter=',')
-
-    weight_i = weights[-1].eval()
-    np.savetxt(output_folder+weight_name_save+"/w_"+str(2*RNnum_block+2)+".txt",weight_i, delimiter=',')
-    bias_i = biases[-1].eval()
-    np.savetxt(output_folder+weight_name_save+"/b_"+str(2*RNnum_block+2)+".txt",bias_i, delimiter=',')
 
 def load_weights(output_folder, weight_load_name, num_layers):
     weights = []
@@ -63,6 +42,29 @@ def FCDNN_forwardprop(X, weights, biases, num_layers,):
             htemp = tf.nn.sigmoid(tf.add(tf.matmul(htemp, weights[i]), biases[i]))
     yval = tf.add(tf.matmul(htemp, weights[-1]), biases[-1])
     return yval
+
+## ResNet
+def ResNet_save_weights(weights, biases, output_folder, weight_name_save, RNnum_block):
+    weight_i = weights[0].eval()
+    np.savetxt(output_folder+weight_name_save+"/w_"+str(0)+".txt",weight_i, delimiter=',')
+    bias_i = biases[0].eval()
+    np.savetxt(output_folder+weight_name_save+"/b_"+str(0)+".txt",bias_i, delimiter=',')
+
+    for i in range(0, RNnum_block):
+        weight_i = weights[2*i+1].eval()
+        np.savetxt(output_folder+weight_name_save+"/w_"+str(2*i+1)+".txt",weight_i, delimiter=',')
+        bias_i = biases[2*i+1].eval()
+        np.savetxt(output_folder+weight_name_save+"/b_"+str(2*i+1)+".txt",bias_i, delimiter=',')
+
+        weight_i = weights[2*i+2].eval()
+        np.savetxt(output_folder+weight_name_save+"/w_"+str(2*i+2)+".txt",weight_i, delimiter=',')
+        bias_i = biases[2*i+2].eval()
+        np.savetxt(output_folder+weight_name_save+"/b_"+str(2*i+2)+".txt",bias_i, delimiter=',')
+
+    weight_i = weights[-1].eval()
+    np.savetxt(output_folder+weight_name_save+"/w_"+str(2*RNnum_block+2)+".txt",weight_i, delimiter=',')
+    bias_i = biases[-1].eval()
+    np.savetxt(output_folder+weight_name_save+"/b_"+str(2*RNnum_block+2)+".txt",bias_i, delimiter=',')
 
 def ResNet_forwardprop(X, weights, biases, RNnum_block):     
     htemp = tf.nn.sigmoid(tf.add(tf.matmul(X, weights[0]), biases[0]))

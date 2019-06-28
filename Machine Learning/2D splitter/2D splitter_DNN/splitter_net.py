@@ -12,12 +12,8 @@ OUTPUT_SIZE = 100
 tarwave = 500
 bandwidth = 40
 
-Nsample = 14996
-Nr = 0.99
-Nlearning = int(Nr*Nsample)
-Ntest = int((1-Nr)*Nsample)
 PATH = 'D:/NBTP_Lab/Machine Learning/2D splitter/2D splitter_DNN'
-TRAIN_PATH = PATH + '/trainset/02'
+TRAIN_PATH = PATH + '/trainset/03'
 
 def binaryRound(x):
     """
@@ -31,8 +27,8 @@ def binaryRound(x):
         with g.gradient_override_map({"Round": "Identity"}):
             return tf.round(x, name=name)
 
-
-def getData():
+'''
+def getData(): # 01, 02
     # Load Training Data
     print("========      Load Data     ========")
 
@@ -67,6 +63,32 @@ def getData():
     P3 = np.delete(P3, 0, 0)
 
     return sX, P1, P2, P3, wavelength
+'''
+def getData(): # 03
+    # Load Training Data
+    print("========      Load Data     ========")
+
+    sname = TRAIN_PATH + '/index.csv'
+    Xtemp = pd.read_csv(sname, header=None, delimiter=",")
+    sX = Xtemp.values
+
+    port1_name = TRAIN_PATH + '/PORT1result_total.csv'
+    port1 = pd.read_csv(port1_name, header=None, delimiter=",")
+    P1 = port1.values
+
+    port2_name = TRAIN_PATH + '/PORT2result_total.csv'
+    port2 = pd.read_csv(port2_name, header=None, delimiter=",")
+    P2 = port2.values
+
+    port3_name = TRAIN_PATH + '/PORT3result_total.csv'
+    port3 = pd.read_csv(port3_name, header=None, delimiter=",")
+    P3 = port3.values
+
+    wavelength = P1[0,:]
+    Nsample = P1.shape[0]
+    P1 = np.delete(P1, 0, 0)
+
+    return sX, P1, P2, P3, wavelength, Nsample
 
 
 def Ratio_Optimization(
@@ -141,10 +163,15 @@ def Ratio_Optimization(
 
 def main(
     output_folder, weight_name_save, n_batch, lr_rate,
-    lr_decay, num_layers, RNnum_block, n_hidden, DNN_mode):
-    
+    lr_decay, huber_delta, num_layers, RNnum_block, n_hidden,
+    Dense_list, DNN_mode):
+
     # Load training data
-    sX, _, sP2, sP3, wavelength = getData()
+    sX, _, sP2, sP3, wavelength, Nsample = getData()
+
+    Nr = 0.4
+    Nlearning = int(Nr*Nsample)
+    Ntest = int((1-Nr)*Nsample)
 
     ## Define NN ##
     g1 = tf.Graph()  # port2 NN
@@ -191,10 +218,25 @@ def main(
 
                 ## Forward propagation
                 P2hat = ResNet_forwardprop(X2, P2weights, P2biases, RNnum_block)
+            elif DNN_mode == 2:
+                ## DenseNet init
+                # input
+                P2weights.append(init_weights((INPUT_SIZE, n_hidden)))
+                P2biases.append(init_bias(n_hidden))
+                for n in Dense_list:
+                    for i in range(n):
+                        P2weights.append(init_weights((n_hidden, n_hidden)))
+                        P2biases.append(init_bias(n_hidden))
+                # output
+                P2weights.append(init_weights((n_hidden, OUTPUT_SIZE)))
+                P2biases.append(init_bias(OUTPUT_SIZE))
+
+                ## Forward propagation
+                P2hat = DenseNet_forwardprop(X2, P2weights, P2biases, Dense_list)
             
             ## Optimization
-            # P2loss = tf.reduce_mean(tf.square(P2-P2hat))
-            P2loss = tf.losses.huber_loss(labels=P2, predictions=P2hat, delta=0.2)
+            P2loss = tf.reduce_mean(tf.square(P2-P2hat))
+            # P2loss = tf.losses.huber_loss(labels=P2, predictions=P2hat, delta=huber_delta)
             # P2train = tf.train.AdamOptimizer(learning_rate=lr_rate).minimize(P2loss)
             global_step = tf.Variable(0, trainable=False)
             learning_rate = tf.train.exponential_decay(
@@ -240,10 +282,25 @@ def main(
 
                 ## Forward propagation
                 P3hat = ResNet_forwardprop(X3, P3weights, P3biases, RNnum_block)
+            elif DNN_mode == 2:
+                ## DenseNet init
+                # input
+                P3weights.append(init_weights((INPUT_SIZE, n_hidden)))
+                P3biases.append(init_bias(n_hidden))
+                for n in Dense_list:
+                    for i in range(n):
+                        P3weights.append(init_weights((n_hidden, n_hidden)))
+                        P3biases.append(init_bias(n_hidden))
+                # output
+                P3weights.append(init_weights((n_hidden, OUTPUT_SIZE)))
+                P3biases.append(init_bias(OUTPUT_SIZE))
+
+                ## Forward propagation
+                P3hat = DenseNet_forwardprop(X3, P3weights, P3biases, Dense_list)
 
             ## Optimization
-            # P3loss = tf.reduce_mean(tf.square(P3-P3hat))
-            P3loss = tf.losses.huber_loss(labels=P3, predictions=P3hat, delta=0.2)
+            P3loss = tf.reduce_mean(tf.square(P3-P3hat))
+            # P3loss = tf.losses.huber_loss(labels=P3, predictions=P3hat, delta=huber_delta)
             # P3train = tf.train.AdamOptimizer(learning_rate=lr_rate).minimize(P3loss)
             global_step = tf.Variable(0, trainable=False)
             learning_rate = tf.train.exponential_decay(
@@ -269,6 +326,8 @@ def main(
             FCDNN_save_weights(P2weights, P2biases, output_folder + "/FCDNN/P2", weight_name_save, num_layers)
         elif DNN_mode == 1:
             ResNet_save_weights(P2weights, P2biases, output_folder + "/ResNet/P2", weight_name_save, RNnum_block)
+        elif DNN_mode == 2:
+            DenseNet_save_weights(P2weights, P2biases, output_folder + "/DenseNet/P2", weight_name_save, Dense_list)
         
         P2testloss = []
         # Test
@@ -307,6 +366,8 @@ def main(
             FCDNN_save_weights(P3weights, P3biases, output_folder + "/FCDNN/P3", weight_name_save, num_layers)
         elif DNN_mode == 1:
             ResNet_save_weights(P3weights, P3biases, output_folder + "/ResNet/P3", weight_name_save, RNnum_block)
+        elif DNN_mode == 2:
+            DenseNet_save_weights(P3weights, P3biases, output_folder + "/DenseNet/P3", weight_name_save, Dense_list)
         
         P3testloss = []
         # Test
@@ -346,10 +407,12 @@ if __name__=="__main__":
     parser.add_argument("--n_batch", type=int, default=100)
     parser.add_argument("--lr_rate", type=float, default=1E-2)
     parser.add_argument("--lr_decay", type=float, default=0.9)
+    parser.add_argument("--huber_delta", type=float, default=0.05)
     parser.add_argument("--num_layers", default=4)
     parser.add_argument("--RNnum_block", default=4)
     parser.add_argument("--n_hidden", default=120)
-    parser.add_argument("--DNN_mode", default=1) # 0: FCDNN, 1: ResNet, 2: DenseNet
+    parser.add_argument("--Dense_list", default=[6, 6, 6, 6])
+    parser.add_argument("--DNN_mode", default=0) # 0: FCDNN, 1: ResNet, 2: DenseNet
 
     args = parser.parse_args()
     dict = vars(args)
@@ -375,9 +438,11 @@ if __name__=="__main__":
             'n_batch':dict['n_batch'],
             'lr_rate':dict['lr_rate'],
             'lr_decay':dict['lr_decay'],
+            'huber_delta':dict['huber_delta'],
             'num_layers':int(dict['num_layers']),
             'RNnum_block':int(dict['RNnum_block']),
             'n_hidden':int(dict['n_hidden']),
+            'Dense_list':dict['Dense_list'],
             'DNN_mode':int(dict['DNN_mode'])
             }
 

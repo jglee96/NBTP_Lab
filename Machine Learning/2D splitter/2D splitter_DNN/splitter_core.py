@@ -75,3 +75,37 @@ def ResNet_forwardprop(X, weights, biases, RNnum_block):
     return yval
 
 ## DenseNet
+def DenseNet_save_weights(weights, biases, output_folder, weight_name_save, Dense_list):
+    weight_i = weights[0].eval()
+    np.savetxt(output_folder+weight_name_save+"/w_"+str(0)+".txt",weight_i, delimiter=',')
+    bias_i = biases[0].eval()
+    np.savetxt(output_folder+weight_name_save+"/b_"+str(0)+".txt",bias_i, delimiter=',')
+
+    pre = 0
+    for n in Dense_list:
+        for i in range(n):
+            idx = pre + i + 1
+            weight_i = weights[idx].eval()
+            np.savetxt(output_folder+weight_name_save+"/w_"+str(idx)+".txt",weight_i, delimiter=',')
+            bias_i = biases[idx].eval()
+            np.savetxt(output_folder+weight_name_save+"/b_"+str(idx)+".txt",bias_i, delimiter=',')
+        pre += n
+    weight_i = weights[-1].eval()
+    np.savetxt(output_folder+weight_name_save+"/w_"+str(pre+1)+".txt",weight_i, delimiter=',')
+    bias_i = biases[-1].eval()
+    np.savetxt(output_folder+weight_name_save+"/b_"+str(pre+1)+".txt",bias_i, delimiter=',')
+
+def DenseNet_forwardprop(X, weights, biases, Dense_list):
+    pre = 0
+    htemp = tf.nn.sigmoid(tf.add(tf.matmul(X, weights[0]), biases[0]))
+    for n in Dense_list:
+        dense = []
+        for i in range(n):
+            dense.append(htemp)
+            htemp = tf.nn.sigmoid(tf.add(tf.matmul(htemp, weights[pre+i+1]), biases[pre+i+1]))
+            for net in dense:
+                htemp = htemp + net
+            htemp = tf.nn.sigmoid(htemp)
+        pre += n
+    yval = tf.add(tf.matmul(htemp, weights[-1]), biases[-1])
+    return yval

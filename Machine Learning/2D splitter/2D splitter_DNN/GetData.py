@@ -3,7 +3,7 @@ import numpy as np
 
 PATH = 'D:/NBTP_Lab/Machine Learning/2D splitter/2D splitter_DNN/trainset/03'
 Nfile1 = 12
-Nfile2 = 21-Nfile1
+Nfile2 = 40-Nfile1
 
 def getData1():
     # Load Training Data
@@ -88,5 +88,5 @@ def getData2():
             np.savetxt(fname, P3, fmt='%.8f', delimiter=',')
 
 if __name__=="__main__":
-    getData1()
+    # getData1()
     getData2()

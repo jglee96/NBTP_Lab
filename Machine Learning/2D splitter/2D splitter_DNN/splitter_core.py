@@ -11,8 +11,14 @@ def init_weights(shape, stddev=.1):
 
 def init_bias(shape, stddev=.1):
     """ Bias initialization """
-    biases = tf.random_normal([shape], stddev=stddev)
+    # biases = tf.random_normal([shape], stddev=stddev)
+    biases = tf.zeros([shape])
     return tf.Variable(biases)
+
+def clipped_relu(x):
+    net = tf.nn.relu(x)
+    net = tf.minimum(tf.maximum(x, 0), 1)
+    return net
 
 ## FCDNN
 def FCDNN_save_weights(weights, biases, output_folder, weight_name_save, num_layers):
@@ -105,7 +111,7 @@ def DenseNet_forwardprop(X, weights, biases, Dense_list):
             htemp = tf.nn.sigmoid(tf.add(tf.matmul(htemp, weights[pre+i+1]), biases[pre+i+1]))
             for net in dense:
                 htemp = htemp + net
-            htemp = tf.nn.sigmoid(htemp)
+            htemp = clipped_relu(htemp)
         pre += n
-    yval = tf.add(tf.matmul(htemp, weights[-1]), biases[-1])
+    yval = tf.nn.sigmoid(tf.add(tf.matmul(htemp, weights[-1]), biases[-1]))
     return yval

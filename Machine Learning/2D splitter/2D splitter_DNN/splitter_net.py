@@ -9,9 +9,6 @@ N_pixel = 20
 INPUT_SIZE = N_pixel * N_pixel
 OUTPUT_SIZE = 100
 
-tarwave = 500
-bandwidth = 40
-
 PATH = 'D:/NBTP_Lab/Machine Learning/2D splitter/2D splitter_DNN'
 TRAIN_PATH = PATH + '/trainset/03'
 
@@ -84,11 +81,12 @@ def getData(): # 03
     port3 = pd.read_csv(port3_name, header=None, delimiter=",")
     P3 = port3.values
 
-    wavelength = P1[0,:]
+    # wavelength = P1[0,:]
     Nsample = P1.shape[0]
-    P1 = np.delete(P1, 0, 0)
+    # P1 = np.delete(P1, 0, 0)
 
-    return sX, P1, P2, P3, wavelength, Nsample
+    # return sX, P1, P2, P3, wavelength, Nsample
+    return sX, P1, P2, P3, Nsample
 
 
 def Ratio_Optimization(
@@ -163,13 +161,14 @@ def Ratio_Optimization(
 
 def main(
     output_folder, weight_name_save, n_batch, lr_rate,
-    lr_decay, huber_delta, num_layers, RNnum_block, n_hidden,
-    Dense_list, DNN_mode):
+    lr_decay, num_layers, RNnum_block, n_hidden,
+    Dense_list, DNN_mode, Optimizer_mode):
 
     # Load training data
-    sX, _, sP2, sP3, wavelength, Nsample = getData()
+    # sX, _, sP2, sP3, wavelength, Nsample = getData()
+    sX, _, sP2, sP3, Nsample = getData()
 
-    Nr = 0.4
+    Nr = 0.9
     Nlearning = int(Nr*Nsample)
     Ntest = int((1-Nr)*Nsample)
 
@@ -236,14 +235,15 @@ def main(
             
             ## Optimization
             P2loss = tf.reduce_mean(tf.square(P2-P2hat))
-            # P2loss = tf.losses.huber_loss(labels=P2, predictions=P2hat, delta=huber_delta)
-            # P2train = tf.train.AdamOptimizer(learning_rate=lr_rate).minimize(P2loss)
-            global_step = tf.Variable(0, trainable=False)
-            learning_rate = tf.train.exponential_decay(
-                lr_rate, global_step, 100, lr_decay, staircase=False)
-            P2train = tf.train.RMSPropOptimizer(
-                learning_rate=learning_rate).minimize(
-                    P2loss, global_step=global_step)
+            if Optimizer_mode == 0:
+                P2train = tf.train.AdamOptimizer(learning_rate=lr_rate).minimize(P2loss)
+            elif Optimizer_mode == 1:
+                global_step = tf.Variable(0, trainable=False)
+                learning_rate = tf.train.exponential_decay(
+                    lr_rate, global_step, 100, lr_decay, staircase=False)
+                P2train = tf.train.RMSPropOptimizer(
+                    learning_rate=learning_rate).minimize(
+                        P2loss, global_step=global_step)
 
     with g2.as_default() as g:
         with g.name_scope("g2") as scope:
@@ -300,14 +300,15 @@ def main(
 
             ## Optimization
             P3loss = tf.reduce_mean(tf.square(P3-P3hat))
-            # P3loss = tf.losses.huber_loss(labels=P3, predictions=P3hat, delta=huber_delta)
-            # P3train = tf.train.AdamOptimizer(learning_rate=lr_rate).minimize(P3loss)
-            global_step = tf.Variable(0, trainable=False)
-            learning_rate = tf.train.exponential_decay(
-                lr_rate, global_step, 100, lr_decay, staircase=False)
-            P3train = tf.train.RMSPropOptimizer(
-                learning_rate=learning_rate).minimize(
-                    P3loss, global_step=global_step)
+            if Optimizer_mode == 0:
+                P3train = tf.train.AdamOptimizer(learning_rate=lr_rate).minimize(P3loss)
+            elif Optimizer_mode == 1:
+                global_step = tf.Variable(0, trainable=False)
+                learning_rate = tf.train.exponential_decay(
+                    lr_rate, global_step, 100, lr_decay, staircase=False)
+                P3train = tf.train.RMSPropOptimizer(
+                    learning_rate=learning_rate).minimize(
+                        P3loss, global_step=global_step)
 
     with tf.Session(graph=g1) as sess:
         sess.run(tf.global_variables_initializer())
@@ -405,14 +406,14 @@ if __name__=="__main__":
     parser.add_argument("--output_folder",type=str, default='D:/NBTP_Lab/Machine Learning/2D splitter/2D splitter_DNN/NN_parameter')
     parser.add_argument("--weight_name_save", type=str, default="")
     parser.add_argument("--n_batch", type=int, default=100)
-    parser.add_argument("--lr_rate", type=float, default=1E-2)
+    parser.add_argument("--lr_rate", type=float, default=1E-3)
     parser.add_argument("--lr_decay", type=float, default=0.9)
-    parser.add_argument("--huber_delta", type=float, default=0.05)
     parser.add_argument("--num_layers", default=4)
-    parser.add_argument("--RNnum_block", default=4)
-    parser.add_argument("--n_hidden", default=120)
-    parser.add_argument("--Dense_list", default=[6, 6, 6, 6])
-    parser.add_argument("--DNN_mode", default=0) # 0: FCDNN, 1: ResNet, 2: DenseNet
+    parser.add_argument("--RNnum_block", default=8)
+    parser.add_argument("--n_hidden", default=450)
+    parser.add_argument("--Dense_list", default=[32, 32])
+    parser.add_argument("--DNN_mode", default=2) # 0: FCDNN, 1: ResNet, 2: DenseNet
+    parser.add_argument("--Optimizer_mode", default=2) # 0: Adam, 1: RMSProp
 
     args = parser.parse_args()
     dict = vars(args)
@@ -438,12 +439,12 @@ if __name__=="__main__":
             'n_batch':dict['n_batch'],
             'lr_rate':dict['lr_rate'],
             'lr_decay':dict['lr_decay'],
-            'huber_delta':dict['huber_delta'],
             'num_layers':int(dict['num_layers']),
             'RNnum_block':int(dict['RNnum_block']),
             'n_hidden':int(dict['n_hidden']),
             'Dense_list':dict['Dense_list'],
-            'DNN_mode':int(dict['DNN_mode'])
+            'DNN_mode':int(dict['DNN_mode']),
+            'Optimizer_mode':int(dict['Optimizer_mode'])
             }
 
     main(**kwargs)

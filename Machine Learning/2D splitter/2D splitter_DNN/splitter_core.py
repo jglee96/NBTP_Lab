@@ -4,15 +4,14 @@ from tensorflow.python.framework import ops
 
 
 # As per Xaiver init, this should be 2/n(input), though many different initializations can be tried. 
-def init_weights(shape, stddev=.1):
+def init_weights(shape, stddev=.5):
     """ Weight initialization """
     weights = tf.random_normal(shape, stddev=stddev)
     return tf.Variable(weights)
 
-def init_bias(shape, stddev=.1):
+def init_bias(shape, stddev=.5):
     """ Bias initialization """
-    # biases = tf.random_normal([shape], stddev=stddev)
-    biases = tf.zeros([shape])
+    biases = tf.random_normal([shape], stddev=stddev)
     return tf.Variable(biases)
 
 def clipped_relu(x):
@@ -103,15 +102,19 @@ def DenseNet_save_weights(weights, biases, output_folder, weight_name_save, Dens
 
 def DenseNet_forwardprop(X, weights, biases, Dense_list):
     pre = 0
-    htemp = tf.nn.sigmoid(tf.add(tf.matmul(X, weights[0]), biases[0]))
-    for n in Dense_list:
+    htemp = tf.nn.relu6(tf.add(tf.matmul(X, weights[0]), biases[0]))
+    for idx, n in enumerate(Dense_list):
         dense = []
-        for i in range(n):
+        dense.append(htemp)
+        htemp = tf.nn.relu6(tf.add(tf.matmul(htemp, weights[pre+1]), biases[pre+1]))
+        dense.append(htemp)
+        for i in range(n-1):
+            htemp = tf.concat(htemp, axis=0)
+            htemp = tf.nn.relu6(tf.add(tf.matmul(htemp, weights[pre+i+2]), biases[pre+i+2]))
             dense.append(htemp)
-            htemp = tf.nn.sigmoid(tf.add(tf.matmul(htemp, weights[pre+i+1]), biases[pre+i+1]))
-            for net in dense:
-                htemp = htemp + net
-            htemp = clipped_relu(htemp)
+        htemp = tf.concat(htemp, axis=0)
+        if idx != len(Dense_list)-1:
+            htemp = tf.nn.relu6(htemp)
         pre += n
-    yval = tf.nn.sigmoid(tf.add(tf.matmul(htemp, weights[-1]), biases[-1]))
+    yval = tf.nn.relu6(tf.add(tf.matmul(htemp, weights[-1]), biases[-1]))
     return yval

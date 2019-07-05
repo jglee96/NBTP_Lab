@@ -25,8 +25,7 @@ def getData1():
         port1 = pd.read_csv(port1_name, header=None, delimiter=",")
         P1 = port1.values
         wavelength = P1[0,:]
-        if i != 0:
-            P1 = np.delete(P1, 0, 0)
+        P1 = np.delete(P1, 0, 0)
 
         port2_name = fPATH + '/PORT2result.csv'
         port2 = pd.read_csv(port2_name, delimiter=",")
@@ -88,5 +87,5 @@ def getData2():
             np.savetxt(fname, P3, fmt='%.8f', delimiter=',')
 
 if __name__=="__main__":
-    # getData1()
+    getData1()
     getData2()

@@ -72,12 +72,12 @@ def main():
     P3max = np.max(rP3)
     rP1 = 1-rP1
 
-    r = 0.8
+    r = 1
     center_fact = ((P2min + P2max)/2 + (P3min + P3max)/2)/2
-    FOM = r*(rP2 + rP3-2*center_fact) - (1-r)*abs(rP2 - rP3) - rP1# linear
+    FOM = r*((rP2-center_fact) + (rP3-center_fact)) - (1-r)*abs(rP2 - rP3)# linear
     # FOM = np.sqrt(((rP2 - center_fact)**2 + (rP3 - center_fact)**2))
     # FOM = rP3
-    print("FOM Calculation Success!!")
+    print("FOM Calculation Success!!", center_fact)
     FOM_temp = np.reshape(FOM, newshape=(-1, 1))
     rX = X * FOM_temp
     rX = np.sum(rX, axis=0)

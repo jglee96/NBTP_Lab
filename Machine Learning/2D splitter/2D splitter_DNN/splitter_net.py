@@ -4,6 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import argparse
 from splitter_core import *
+from SFOptimizer import SFOptimizer, SFDamping
 
 N_pixel = 20
 INPUT_SIZE = N_pixel * N_pixel
@@ -81,11 +82,15 @@ def getData(): # 03
     port3 = pd.read_csv(port3_name, header=None, delimiter=",")
     P3 = port3.values
 
-    # wavelength = P1[0,:]
     Nsample = P1.shape[0]
-    # P1 = np.delete(P1, 0, 0)
+    x = np.arange(P1.shape[0])
+    np.random.shuffle(x)
 
-    # return sX, P1, P2, P3, wavelength, Nsample
+    sX = sX[x, :]
+    P1 = P1[x, :]
+    P2 = P2[x, :]
+    P3 = P3[x, :]
+
     return sX, P1, P2, P3, Nsample
 
 
@@ -234,14 +239,27 @@ def main(
                 P2hat = DenseNet_forwardprop(X2, P2weights, P2biases, Dense_list)
             
             ## Optimization
-            P2loss = tf.reduce_mean(tf.square(P2-P2hat))
+            P2loss = tf.reduce_mean(tf.abs(P2-P2hat)/P2)
+            # P2loss = tf.reduce_mean(tf.square((P2-P2hat)/P2))
             if Optimizer_mode == 0:
                 P2train = tf.train.AdamOptimizer(learning_rate=lr_rate).minimize(P2loss)
             elif Optimizer_mode == 1:
                 global_step = tf.Variable(0, trainable=False)
                 learning_rate = tf.train.exponential_decay(
-                    lr_rate, global_step, 100, lr_decay, staircase=False)
+                    lr_rate, global_step, 10, lr_decay, staircase=True)
                 P2train = tf.train.RMSPropOptimizer(
+                    learning_rate=learning_rate).minimize(
+                        P2loss, global_step=global_step)
+            elif Optimizer_mode == 2:
+                var_list = P2weights + P2biases
+                P2train = SFOptimizer(
+                    var_list, krylov_dimension=len(var_list),
+                    damping_type=SFDamping.marquardt, dtype=tf.float32).minimize(P2loss)
+            elif Optimizer_mode == 3:
+                global_step = tf.Variable(0, trainable=False)
+                learning_rate = tf.train.exponential_decay(
+                    lr_rate, global_step, 10, lr_decay, staircase=True)
+                P2train = tf.train.GradientDescentOptimizer(
                     learning_rate=learning_rate).minimize(
                         P2loss, global_step=global_step)
 
@@ -299,14 +317,27 @@ def main(
                 P3hat = DenseNet_forwardprop(X3, P3weights, P3biases, Dense_list)
 
             ## Optimization
-            P3loss = tf.reduce_mean(tf.square(P3-P3hat))
+            P3loss = tf.reduce_mean(tf.abs(P3-P3hat)/P3)
+            # P3loss = tf.reduce_mean(tf.square((P3-P3hat)/P3))
             if Optimizer_mode == 0:
                 P3train = tf.train.AdamOptimizer(learning_rate=lr_rate).minimize(P3loss)
             elif Optimizer_mode == 1:
                 global_step = tf.Variable(0, trainable=False)
                 learning_rate = tf.train.exponential_decay(
-                    lr_rate, global_step, 100, lr_decay, staircase=False)
+                    lr_rate, global_step, 10, lr_decay, staircase=True)
                 P3train = tf.train.RMSPropOptimizer(
+                    learning_rate=learning_rate).minimize(
+                        P3loss, global_step=global_step)
+            elif Optimizer_mode == 2:
+                var_list = P3weights + P3biases
+                P3train = SFOptimizer(
+                    var_list, krylov_dimension=len(var_list),
+                    damping_type=SFDamping.marquardt, dtype=tf.float32).minimize(P3loss)
+            elif Optimizer_mode == 3:
+                global_step = tf.Variable(0, trainable=False)
+                learning_rate = tf.train.exponential_decay(
+                    lr_rate, global_step, 10, lr_decay, staircase=True)
+                P3train = tf.train.GradientDescentOptimizer(
                     learning_rate=learning_rate).minimize(
                         P3loss, global_step=global_step)
 
@@ -341,12 +372,12 @@ def main(
                 [n_batch, OUTPUT_SIZE])
             feed2 = {X2: input_X, P2: output_P2}
             P2testloss.append(sess.run(P2loss, feed_dict=feed2))
-        P2test = np.reshape(sess.run(P2hat, feed_dict={X2: np.reshape(sX[0, :], [1, INPUT_SIZE])}), OUTPUT_SIZE)
+        P2test = np.reshape(sess.run(P2hat, feed_dict={X2: np.reshape(sX[99, :], [1, INPUT_SIZE])}), OUTPUT_SIZE)
         plt.figure(1)
         plt.subplot(2, 1, 1)
         plt.plot(P2test)
         plt.subplot(2, 1, 2)
-        plt.plot(np.reshape(sP2[0, :], OUTPUT_SIZE))
+        plt.plot(np.reshape(sP2[99, :], OUTPUT_SIZE))
 
     with tf.Session(graph=g2) as sess:
         sess.run(tf.global_variables_initializer())
@@ -381,12 +412,12 @@ def main(
                 [n_batch, OUTPUT_SIZE])
             feed3 = {X3: input_X, P3: output_P3}
             P3testloss.append(sess.run(P3loss, feed_dict=feed3))
-        P3test = np.reshape(sess.run(P3hat, feed_dict={X3: np.reshape(sX[0, :], [1, INPUT_SIZE])}), OUTPUT_SIZE)
+        P3test = np.reshape(sess.run(P3hat, feed_dict={X3: np.reshape(sX[99, :], [1, INPUT_SIZE])}), OUTPUT_SIZE)
         plt.figure(2)
         plt.subplot(2, 1, 1)
         plt.plot(P3test)
         plt.subplot(2, 1, 2)
-        plt.plot(np.reshape(sP3[0, :], OUTPUT_SIZE))
+        plt.plot(np.reshape(sP3[99, :], OUTPUT_SIZE))
 
     plt.figure(3)
     plt.plot(P2trainloss)
@@ -406,14 +437,14 @@ if __name__=="__main__":
     parser.add_argument("--output_folder",type=str, default='D:/NBTP_Lab/Machine Learning/2D splitter/2D splitter_DNN/NN_parameter')
     parser.add_argument("--weight_name_save", type=str, default="")
     parser.add_argument("--n_batch", type=int, default=100)
-    parser.add_argument("--lr_rate", type=float, default=1E-3)
+    parser.add_argument("--lr_rate", type=float, default=1E-4)
     parser.add_argument("--lr_decay", type=float, default=0.9)
-    parser.add_argument("--num_layers", default=4)
-    parser.add_argument("--RNnum_block", default=8)
-    parser.add_argument("--n_hidden", default=450)
-    parser.add_argument("--Dense_list", default=[32, 32])
+    parser.add_argument("--num_layers", default=10)
+    parser.add_argument("--RNnum_block", default=5)
+    parser.add_argument("--n_hidden", default=250)
+    parser.add_argument("--Dense_list", default=[8, 8, 8, 8, 8, 8, 8, 8])
     parser.add_argument("--DNN_mode", default=2) # 0: FCDNN, 1: ResNet, 2: DenseNet
-    parser.add_argument("--Optimizer_mode", default=2) # 0: Adam, 1: RMSProp
+    parser.add_argument("--Optimizer_mode", default=0) # 0: Adam, 1: RMSProp, 2: SFO, 3: SGD
 
     args = parser.parse_args()
     dict = vars(args)

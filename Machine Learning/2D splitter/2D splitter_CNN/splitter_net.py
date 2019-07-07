@@ -13,6 +13,7 @@ OUTPUT_SIZE = 100
 PATH = 'D:/NBTP_Lab/Machine Learning/2D splitter/2D splitter_DNN'
 TRAIN_PATH = PATH + '/trainset/03'
 
+
 def binaryRound(x):
     """
     Rounds a tensor whose values are in [0,1] to a tensor with values in {0, 1},
@@ -26,7 +27,7 @@ def binaryRound(x):
             return tf.round(x, name=name)
 
 
-def getData(): # 03
+def getData():  # 03
     # Load Training Data
     print("========      Load Data     ========")
 
@@ -56,12 +57,11 @@ def getData(): # 03
     P3 = P3[x, :]
 
     return sX, P1, P2, P3, Nsample
-    
+
 
 def main(
     output_folder, weight_name_save, n_batch, lr_rate,
-    lr_decay, num_layers, RNnum_block, n_hidden,
-    Dense_list, NN_mode, Optimizer_mode):
+    adam_beta1, adam_beta2, lr_decay, NN_mode, Optimizer_mode):
 
     # Load training data
     sX, _, sP2, sP3, Nsample = getData()
@@ -82,7 +82,7 @@ def main(
 
     with g1.as_default() as g:
         with g.name_scope("g1") as scope:
-            X2 = tf.placeholder(tf.float32, [None, N_pixel, N_pixel, 1]) # grayscale (1, 0)
+            X2 = tf.placeholder(tf.float32, [None, N_pixel, N_pixel, 1])  # grayscale (1, 0)
             P2 = tf.placeholder(tf.float32, [None, OUTPUT_SIZE])
 
             if NN_mode == 0:
@@ -104,7 +104,8 @@ def main(
             # P2loss = tf.reduce_mean(tf.abs(P2-P2hat))
             P2loss = tf.reduce_mean(tf.square((P2-P2hat)))
             if Optimizer_mode == 0:
-                P2train = tf.train.AdamOptimizer(learning_rate=lr_rate, beta1=0.5).minimize(P2loss)
+                P2train = tf.train.AdamOptimizer(
+                    learning_rate=lr_rate, beta1=adam_beta1, beta2=adam_beta2).minimize(P2loss)
             elif Optimizer_mode == 1:
                 global_step = tf.Variable(0, trainable=False)
                 learning_rate = tf.train.exponential_decay(
@@ -150,7 +151,8 @@ def main(
             # P3loss = tf.reduce_mean(tf.abs(P3-P3hat))
             P3loss = tf.reduce_mean(tf.square((P3-P3hat)))
             if Optimizer_mode == 0:
-                P3train = tf.train.AdamOptimizer(learning_rate=lr_rate, beta1=0.5).minimize(P3loss)
+                P3train = tf.train.AdamOptimizer(
+                    learning_rate=lr_rate, beta1=adam_beta1, beta2=adam_beta2).minimize(P3loss)
             elif Optimizer_mode == 1:
                 global_step = tf.Variable(0, trainable=False)
                 learning_rate = tf.train.exponential_decay(
@@ -226,7 +228,7 @@ def main(
             save_weights(P3weights, P3biases, output_folder + "/P3", weight_name_save, num_layers)
         else:
             print("Not Yet")
-        
+
         P3testloss = []
         # Test
         for n in range(int(Ntest/n_batch)):
@@ -265,10 +267,8 @@ if __name__=="__main__":
     parser.add_argument("--n_batch", type=int, default=100)
     parser.add_argument("--lr_rate", type=float, default=1E-3)
     parser.add_argument("--lr_decay", type=float, default=0.9)
-    parser.add_argument("--num_layers", default=10)
-    parser.add_argument("--RNnum_block", default=5)
-    parser.add_argument("--n_hidden", default=250)
-    parser.add_argument("--Dense_list", default=[8, 8, 8, 8, 8, 8, 8, 8])
+    parser.add_argument("--adam_beta1", type=float, default=0.5)
+    parser.add_argument("--adam_beta2", type=float, default=0.7)
     parser.add_argument("--NN_mode", default=0) # 0: CNN
     parser.add_argument("--Optimizer_mode", default=0) # 0: Adam, 1: RMSProp, 2: SFO, 3: SGD
 
@@ -296,10 +296,8 @@ if __name__=="__main__":
             'n_batch':dict['n_batch'],
             'lr_rate':dict['lr_rate'],
             'lr_decay':dict['lr_decay'],
-            'num_layers':int(dict['num_layers']),
-            'RNnum_block':int(dict['RNnum_block']),
-            'n_hidden':int(dict['n_hidden']),
-            'Dense_list':dict['Dense_list'],
+            'adam_beta1':dict['adam_beta1'],
+            'adam_beta2':dict['adam_beta2'],
             'NN_mode':int(dict['NN_mode']),
             'Optimizer_mode':int(dict['Optimizer_mode'])
             }

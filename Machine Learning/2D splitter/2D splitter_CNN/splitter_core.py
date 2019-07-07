@@ -9,15 +9,18 @@ def init_weights(shape, stddev=.5):
     weights = tf.random_normal([shape], stddev=stddev)
     return tf.Variable(weights)
 
+
 def init_bias(shape, stddev=.5):
     """ Bias initialization """
     biases = tf.random_normal([shape], stddev=stddev)
     return tf.Variable(biases)
 
+
 def clipped_relu(x):
     net = tf.nn.leaky_relu(x)
     net = tf.minimum(x, 1)
     return net
+
 
 ## FCDNN
 def save_weights(weights, biases, output_folder, weight_name_save, num_layers):
@@ -26,6 +29,7 @@ def save_weights(weights, biases, output_folder, weight_name_save, num_layers):
         np.savetxt(output_folder+weight_name_save+"/w_"+str(i)+".txt",weight_i, delimiter=',')
         # bias_i = biases[i].eval()
         # np.savetxt(output_folder+weight_name_save+"/b_"+str(i)+".txt",bias_i, delimiter=',')
+
 
 def load_weights(output_folder, weight_load_name, num_layers):
     weights = []
@@ -38,6 +42,7 @@ def load_weights(output_folder, weight_load_name, num_layers):
         b_i = tf.Variable(bias_i, dtype=tf.float32)
         biases.append(b_i)
     return weights, biases
+
 
 def forwardprop(X, weights, biases):
 
@@ -54,7 +59,7 @@ def forwardprop(X, weights, biases):
     net = tf.nn.relu6(net)
     net = tf.nn.max_pool(
         net, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME') # (?, 5, 5, 64)
-    
+
     net = tf.nn.conv2d(
         net, tf.reshape(weights[2], [3, 3, 64, 128]),
         strides=[1, 1, 1, 1], padding='SAME') # (?, 5, 5, 128)

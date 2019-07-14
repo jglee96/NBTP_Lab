@@ -1,0 +1,3 @@
+Batch Size: 64, Num Layer: 2, Num Neuron: 100, Learning Rate: 0.01000 -- Average: 0.035, Max: 0.15935
+Batch Size: 64, Num Layer: 2, Num Neuron: 100, Learning Rate: 0.00100 -- Average: 0.036, Max: 0.19572
+Batch Size: 64, Num Layer: 4, Num Neuron: 250, Learning Rate: 0.00100 -- Average: 0.028, Max: 0.18739

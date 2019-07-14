@@ -1,0 +1,2 @@
+model_checkpoint_path: "D:/NBTP_Lab/DBR/DBR_DRQN/model/drqn_model_201905162125.cptk"
+all_model_checkpoint_paths: "D:/NBTP_Lab/DBR/DBR_DRQN/model/drqn_model_201905162125.cptk"

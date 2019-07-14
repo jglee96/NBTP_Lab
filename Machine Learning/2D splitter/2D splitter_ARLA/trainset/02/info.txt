@@ -1,3 +1,0 @@
-File: Si_sample(20180618)
-sample index order: j, i -> transpose need
-number of data: 14996

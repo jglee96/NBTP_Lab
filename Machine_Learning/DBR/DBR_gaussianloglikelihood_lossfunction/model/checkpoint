@@ -1,0 +1,2 @@
+model_checkpoint_path: "D:/NBTP_Lab/Machine Learning/DBR/DBR_gaussianloglikelihood_lossfunction/model/FCDNN_2019061420.ckpt"
+all_model_checkpoint_paths: "D:/NBTP_Lab/Machine Learning/DBR/DBR_gaussianloglikelihood_lossfunction/model/FCDNN_2019061420.ckpt"

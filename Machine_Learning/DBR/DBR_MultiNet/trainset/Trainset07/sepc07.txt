@@ -1,0 +1,14 @@
+minwave = 200
+maxwave = 800
+wavestep = 5
+tarwave = 400
+
+Nslice = 7
+nh = 2.6811  # TiO2 at 400 nm (Siefke)
+nl = 1.4701  # SiO2 at 400 nm (Malitson)
+
+tl = (tarwave/(4*nh)) +- 20
+tu = (tarwave/(4*nl)) +- 20
+
+lbound = (tarwave/(4*nh)) - 20
+ubound = (tarwave/(4*nl)) + 20

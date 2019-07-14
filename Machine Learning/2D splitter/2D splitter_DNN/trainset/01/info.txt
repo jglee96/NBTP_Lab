@@ -1,3 +1,0 @@
-File: Si_sample(20190617)
-Taper Input, Output
-number of data: 9999

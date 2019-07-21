@@ -1,0 +1,4 @@
+File: Si_sample(20180701)
+No taper Input, Output
+sample index order: i, j
+number of data: 40000

@@ -12,7 +12,7 @@ bandwidth = 10e-6
 print("======== Design Information ========")
 print('tarwave: {}um, nh: Si, nl: Air'.format(tarwave))
 
-PATH = 'D:/NBTP_Lab/Machine Learning/2D splitter/2D splitter_ARLA'
+PATH = 'D:/NBTP_Lab/Machine_Learning/2Dsplitter/2Dsplitter_ARLA'
 TRAIN_PATH = PATH + '/trainset/05'
 
 def getData():
@@ -71,12 +71,15 @@ def main():
 
     r = 0.7
     pr = 0.5
-    center_fact = ((P2min + P2max)/2 + (P3min + P3max)/2)/2
-    # rP2 = (rP2 - P2min)/(P2max - P2min)
-    # rP3 = (rP3 - P3min)/(P3max - P3min)
+    # center_fact = ((P2min + P2max)/2 + (P3min + P3max)/2)/2
+    # center_fact1 = (P2min + P2max)/2
+    # center_fact2 = (P3min + P3max)/2
+    rP2 = (rP2 - P2min)/(P2max - P2min)
+    rP3 = (rP3 - P3min)/(P3max - P3min)
     # FOM = r*(pr*(rP2-center_fact) + (1-pr)*(rP3-center_fact)) - (1-r)*abs(rP2 - rP3) - (1-rP1)# linear
-    FOM = rP2
-    print("FOM Calculation Success!!", center_fact)
+    # FOM = r*(pr*(rP2-center_fact1) + (1-pr)*(rP3-center_fact2)) - (1-r)*abs(rP2 - rP3) - (1-rP1)# linear
+    FOM = (rP2-0.5) + (rP3-0.5) - 0.5*abs(rP2-rP3)
+    print("FOM Calculation Success!!")
     FOM_temp = np.reshape(FOM, newshape=(-1, 1))
     rX = X * FOM_temp
     rX = np.sum(rX, axis=0)

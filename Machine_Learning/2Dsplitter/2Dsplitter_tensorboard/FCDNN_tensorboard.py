@@ -7,10 +7,10 @@ from datetime import datetime
 
 N_pixel = 20
 INPUT_SIZE = N_pixel * N_pixel
-OUTPUT_SIZE = 100
+OUTPUT_SIZE = 50
 
 PATH = 'D:/NBTP_Lab/Machine_Learning/2Dsplitter/2Dsplitter_tensorboard'
-TRAIN_PATH = PATH + '/trainset/03'
+TRAIN_PATH = PATH + '/trainset/07'
 
 def getData(): # 03
     # Load Training Data
@@ -79,7 +79,7 @@ def main(n_batch, lr_rate, beta1, beta2, n_hidden):
     # trainP1_total = trainP1
     trainP2_total = trainP2
     # trainP3_total = trainP3
-    n_copy = 4
+    n_copy = 20
     for i in range(n_copy):
         trainX, trainP2 = shuffle_data(trainX, trainP2)
         trainX_total = np.concatenate((trainX_total, trainX), axis=0)
@@ -103,14 +103,14 @@ def main(n_batch, lr_rate, beta1, beta2, n_hidden):
 
 
     with tf.name_scope('Yhat'):
-        net = tf.layers.dense(net, OUTPUT_SIZE, activation=None, name="Yhat")
+        net = tf.layers.dense(net, OUTPUT_SIZE, activation=tf.nn.sigmoid, name="Yhat")
         net_hist.append(tf.summary.histogram("activations_Yhat", net))
         dense_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, "Yhat")
         net_hist.append(tf.summary.histogram("weights_Yhat", dense_vars[0]))
         net_hist.append(tf.summary.histogram("biasess_Yhat", dense_vars[1]))
     Yhat = net
 
-    loss = tf.losses.mean_squared_error(Y, Yhat)
+    loss = tf.reduce_mean(tf.square(Y - Yhat))
     loss_hist = tf.summary.scalar('loss', loss)
     train = tf.train.AdamOptimizer(learning_rate=lr_rate).minimize(loss)
     
@@ -129,7 +129,7 @@ def main(n_batch, lr_rate, beta1, beta2, n_hidden):
             feed_train = {X: feed_trainX, Y: feed_trainY}
             sess.run(train, feed_dict=feed_train)
             # log
-            if n%100 == 0:
+            if n%10 == 0:
                 merged_summary = tf.summary.merge([loss_hist] + net_hist)
                 summary =sess.run(merged_summary, feed_dict=feed_train)
                 net.writer.add_summary(summary, global_step=n)
@@ -158,10 +158,10 @@ if __name__=="__main__":
     parser = argparse.ArgumentParser(
         description="Physics Net Training")
     parser.add_argument("--n_batch", type=int, default=128)
-    parser.add_argument("--lr_rate", type=float, default=1E-5)
+    parser.add_argument("--lr_rate", type=float, default=1E-3)
     parser.add_argument("--beta1", type=float, default=0.9)
-    parser.add_argument("--beta2", type=float, default=0.7)
-    parser.add_argument("--n_hidden", default=[500, 200, 200, 200, 200])
+    parser.add_argument("--beta2", type=float, default=0.999)
+    parser.add_argument("--n_hidden", default=[100, 100, 100, 100])
     args = parser.parse_args()
     dict = vars(args)
     print(dict)

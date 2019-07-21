@@ -1,0 +1,5 @@
+File: Si_sample(20190716)
+No taper Input, Output
+Triple splitter
+sample index order: i, j
+number of data: 19000

@@ -13,7 +13,7 @@ print("======== Design Information ========")
 print('tarwave: {}um, nh: Si, nl: Air'.format(tarwave))
 
 PATH = 'D:/NBTP_Lab/Machine_Learning/2Dsplitter/2Dsplitter_ARLA'
-TRAIN_PATH = PATH + '/trainset/05'
+TRAIN_PATH = PATH + '/trainset/12'
 
 def getData():
     # Load Training Data
@@ -44,7 +44,7 @@ def getData():
     port2_name = TRAIN_PATH + '/PORT2result_total.csv'
     port2 = pd.read_csv(port2_name, header=None, delimiter=",")
     P2 = port2.values
-    P2 = -P2 # vertical splitter
+    # P2 = -P2 # vertical splitter
 
     port3_name = TRAIN_PATH + '/PORT3result_total.csv'
     port3 = pd.read_csv(port3_name, header=None, delimiter=",")
@@ -71,14 +71,14 @@ def main():
 
     r = 0.7
     pr = 0.5
-    # center_fact = ((P2min + P2max)/2 + (P3min + P3max)/2)/2
+    center_fact = ((P2min + P2max)/2 + (P3min + P3max)/2)/2
     # center_fact1 = (P2min + P2max)/2
     # center_fact2 = (P3min + P3max)/2
     rP2 = (rP2 - P2min)/(P2max - P2min)
     rP3 = (rP3 - P3min)/(P3max - P3min)
-    # FOM = r*(pr*(rP2-center_fact) + (1-pr)*(rP3-center_fact)) - (1-r)*abs(rP2 - rP3) - (1-rP1)# linear
+    FOM = r*(pr*(rP2-center_fact) + (1-pr)*(rP3-center_fact)) - (1-r)*abs(rP2 - rP3) + rP1# linear
     # FOM = r*(pr*(rP2-center_fact1) + (1-pr)*(rP3-center_fact2)) - (1-r)*abs(rP2 - rP3) - (1-rP1)# linear
-    FOM = (rP2-0.5) + (rP3-0.5) - 0.5*abs(rP2-rP3)
+    # FOM = (rP2-0.5) + (rP3-0.5) - 0.5*abs(rP2-rP3)
     print("FOM Calculation Success!!")
     FOM_temp = np.reshape(FOM, newshape=(-1, 1))
     rX = X * FOM_temp

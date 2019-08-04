@@ -12,7 +12,7 @@ bandwidth = 10e-6
 print("======== Design Information ========")
 print('tarwave: {}um, nh: Si, nl: Air'.format(tarwave))
 
-PATH = 'D:/NBTP_Lab/Machine Learning/2D splitter/2D splitter_ARLA'
+PATH = 'D:/NBTP_Lab/Machine_Learning/2Dsplitter/2Dsplitter_ARLA'
 TRAIN_PATH = PATH + '/trainset/04'
 
 def getData():

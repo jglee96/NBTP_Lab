@@ -1,0 +1,6 @@
+File: Si_sample(20190725)
+No taper Input, Output
+increase simulation time, fdtd region
+output size: 50
+sample index order: i, j
+number of data: 3000

@@ -1,0 +1,6 @@
+File: Si_sample(20190802)
+taper Input, Output
+increase simulation time, fdtd region, mesh override
+output size: 50
+sample index order: i, j
+number of data: 5*1000

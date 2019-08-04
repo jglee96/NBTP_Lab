@@ -10,13 +10,13 @@ INPUT_SIZE = N_pixel * N_pixel
 OUTPUT_SIZE = 50
 
 PATH = 'D:/NBTP_Lab/Machine_Learning/2Dsplitter/2Dsplitter_tensorboard'
-TRAIN_PATH = PATH + '/trainset/07'
+TRAIN_PATH = PATH + '/trainset/12'
 
 def getData(): # 03
     # Load Training Data
     print("========      Load Data     ========")
 
-    sname = TRAIN_PATH + '/index.csv'
+    sname = TRAIN_PATH + '/index_total.csv'
     Xtemp = pd.read_csv(sname, header=None, delimiter=",")
     sX = Xtemp.values
 
@@ -41,9 +41,9 @@ def getData(): # 03
     P2 = P2[x, :]
     P3 = P3[x, :]
 
-    P1 = 10*np.log(P1/0.5)
-    P2 = 10*np.log(P2/0.5)
-    P3 = 10*np.log(P3/0.5)
+    # P1 = 10*np.log(P1/0.5)
+    # P2 = 10*np.log(P2/0.5)
+    # P3 = 10*np.log(P3/0.5)
 
     return sX, P1, P2, P3, Nsample
 
@@ -79,7 +79,7 @@ def main(n_batch, lr_rate, beta1, beta2, n_hidden):
     # trainP1_total = trainP1
     trainP2_total = trainP2
     # trainP3_total = trainP3
-    n_copy = 20
+    n_copy = 100
     for i in range(n_copy):
         trainX, trainP2 = shuffle_data(trainX, trainP2)
         trainX_total = np.concatenate((trainX_total, trainX), axis=0)
@@ -110,7 +110,7 @@ def main(n_batch, lr_rate, beta1, beta2, n_hidden):
         net_hist.append(tf.summary.histogram("biasess_Yhat", dense_vars[1]))
     Yhat = net
 
-    loss = tf.reduce_mean(tf.square(Y - Yhat))
+    loss = tf.reduce_mean(tf.abs(Y - Yhat))
     loss_hist = tf.summary.scalar('loss', loss)
     train = tf.train.AdamOptimizer(learning_rate=lr_rate).minimize(loss)
     
@@ -157,14 +157,13 @@ def main(n_batch, lr_rate, beta1, beta2, n_hidden):
 if __name__=="__main__":
     parser = argparse.ArgumentParser(
         description="Physics Net Training")
-    parser.add_argument("--n_batch", type=int, default=128)
+    parser.add_argument("--n_batch", type=int, default=100)
     parser.add_argument("--lr_rate", type=float, default=1E-3)
     parser.add_argument("--beta1", type=float, default=0.9)
     parser.add_argument("--beta2", type=float, default=0.999)
-    parser.add_argument("--n_hidden", default=[100, 100, 100, 100])
+    parser.add_argument("--n_hidden", default=[200, 200, 200, 200])
     args = parser.parse_args()
     dict = vars(args)
-    print(dict)
 
     for key,value in dict.items():
         if (dict[key]=="False"):

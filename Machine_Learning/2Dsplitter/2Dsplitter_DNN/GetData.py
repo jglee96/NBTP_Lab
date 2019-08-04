@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-PATH = 'D:/NBTP_Lab/Machine_Learning/2Dsplitter/2Dsplitter_DNN/trainset/12'
+PATH = 'D:/NBTP_Lab/Machine_Learning/2Dsplitter/2Dsplitter_DNN/trainset/13'
 Nfile1 = 0
 # Nfile2 = 40-Nfile1
 Nfile2 = 10

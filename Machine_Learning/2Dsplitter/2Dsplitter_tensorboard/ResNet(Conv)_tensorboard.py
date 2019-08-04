@@ -41,10 +41,6 @@ def getData(): # 03
     P2 = P2[x, :]
     P3 = P3[x, :]
 
-    # P1 = 10*np.log(P1/1)
-    # P2 = 10*np.log(P2/1)
-    # P3 = 10*np.log(P3/1)
-
     return sX, P1, P2, P3, Nsample
 
 

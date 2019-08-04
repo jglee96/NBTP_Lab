@@ -13,7 +13,7 @@ print("======== Design Information ========")
 print('tarwave: {}um, nh: Si, nl: Air'.format(tarwave))
 
 PATH = 'D:/NBTP_Lab/Machine_Learning/2Dsplitter/2Dsplitter_ARLA'
-TRAIN_PATH = PATH + '/trainset/12'
+TRAIN_PATH = PATH + '/trainset/13'
 
 def getData():
     # Load Training Data
@@ -50,14 +50,11 @@ def getData():
     port3 = pd.read_csv(port3_name, header=None, delimiter=",")
     P3 = port3.values
 
-    wavelength = P1[0,:]
-    # P1 = np.delete(P1, 0, 0)
-
-    return sX, P1, P2, P3, wavelength
+    return sX, P1, P2, P3
 
 
 def main():
-    X, P1, P2, P3, wavelength = getData()
+    X, P1, P2, P3 = getData()
     print("Load Data Success!!")
 
     rP1 = TwoCal.broad_reward(P1)
@@ -69,7 +66,7 @@ def main():
     P3min = np.min(rP3)
     P3max = np.max(rP3)
 
-    r = 0.7
+    r = 1
     pr = 0.5
     center_fact = ((P2min + P2max)/2 + (P3min + P3max)/2)/2
     # center_fact1 = (P2min + P2max)/2

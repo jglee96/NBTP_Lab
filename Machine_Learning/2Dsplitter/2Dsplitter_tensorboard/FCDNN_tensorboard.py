@@ -10,7 +10,7 @@ INPUT_SIZE = N_pixel * N_pixel
 OUTPUT_SIZE = 50
 
 PATH = 'D:/NBTP_Lab/Machine_Learning/2Dsplitter/2Dsplitter_tensorboard'
-TRAIN_PATH = PATH + '/trainset/12'
+TRAIN_PATH = PATH + '/trainset/11'
 
 def getData(): # 03
     # Load Training Data
@@ -40,10 +40,6 @@ def getData(): # 03
     P1 = P1[x, :]
     P2 = P2[x, :]
     P3 = P3[x, :]
-
-    # P1 = 10*np.log(P1/0.5)
-    # P2 = 10*np.log(P2/0.5)
-    # P3 = 10*np.log(P3/0.5)
 
     return sX, P1, P2, P3, Nsample
 

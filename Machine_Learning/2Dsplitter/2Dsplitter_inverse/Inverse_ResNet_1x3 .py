@@ -79,17 +79,15 @@ def main(n_batch, lr_rate, beta1, beta2, n_hidden):
         X = tf.placeholder(tf.float32, [None, INPUT_SIZE])
         Y = tf.placeholder(tf.float32, [None, OUTPUT_SIZE])
 
-        net = tf.layers.dense(Y, n_hidden[0], activation=tf.nn.relu, kernel_initializer=tf.contrib.layers.xavier_initializer(), name="transe")
+        net = tf.layers.dense(Y, n_hidden[0], activation=tf.nn.sigmoid, kernel_initializer=tf.contrib.layers.xavier_initializer(), name="transe")
         for i, n in enumerate(n_hidden):
             prenet = net
-            with tf.name_scope('dense'+str(i)+'_1'):
-                net = tf.layers.dense(net, n, activation=tf.nn.relu, kernel_initializer=tf.contrib.layers.xavier_initializer(), name="dense"+str(i)+"_1")
-            with tf.name_scope('dense'+str(i)+'_2'):
-                net = tf.layers.dense(net, n, activation=None, kernel_initializer=tf.contrib.layers.xavier_initializer(), name="dense"+str(i)+"_2")
-            net = tf.nn.relu(tf.add(net, prenet))
+            net = tf.layers.dense(net, n, activation=tf.nn.sigmoid, kernel_initializer=tf.contrib.layers.xavier_initializer(), name="dense"+str(i)+"_1")
+            net = tf.layers.dense(net, n, activation=None, kernel_initializer=tf.contrib.layers.xavier_initializer(), name="dense"+str(i)+"_2")
+            net = tf.nn.sigmoid(tf.add(net, prenet))
 
         with tf.name_scope('Xhat'):
-            net = tf.layers.dense(net, INPUT_SIZE, activation=tf.nn.softmax, name="Xhat")
+            net = tf.layers.dense(net, INPUT_SIZE, activation=tf.nn.sigmoid, name="Xhat")
         Xhat = net
 
         loss = -tf.reduce_mean(X * tf.log(Xhat) + (1 - X) * tf.log(1 - Xhat))
@@ -142,7 +140,7 @@ if __name__ == "__main__":
     parser.add_argument("--lr_rate", type=float, default=1E-3)
     parser.add_argument("--beta1", type=float, default=0.9)
     parser.add_argument("--beta2", type=float, default=0.999)
-    parser.add_argument("--n_hidden", default=[200, 200, 200, 200, 200])
+    parser.add_argument("--n_hidden", default=[100, 100])
     args = parser.parse_args()
     dict = vars(args)
 

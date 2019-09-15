@@ -10,7 +10,7 @@ INPUT_SIZE = N_pixel * int(N_pixel/2)  # symmetry
 OUTPUT_SIZE = 51*2
 
 PATH = 'D:/NBTP_Lab/Machine_Learning/2Dsplitter/2Dsplitter_inverse'
-TRAIN_PATH = PATH + '/trainset/01'
+TRAIN_PATH = PATH + '/trainset/03'
 
 def getData():
     # Load Training Data
@@ -68,7 +68,7 @@ def main(n_batch, lr_rate, beta1, beta2, n_hidden):
     trainP = P[0:Nlearning, :]
     trainX_total = trainX
     trainP_total = trainP
-    n_copy = 100
+    n_copy = 20
     for i in range(n_copy):
         trainX, trainP = shuffle_data(trainX, trainP)
         trainX_total = np.concatenate((trainX_total, trainX), axis=0)

@@ -10,7 +10,7 @@ INPUT_SIZE = N_pixel * int(N_pixel/2)  # symmetry
 OUTPUT_SIZE = 51*2
 
 PATH = 'D:/NBTP_Lab/Machine_Learning/2Dsplitter/2Dsplitter_inverse'
-TRAIN_PATH = PATH + '/trainset/01'
+TRAIN_PATH = PATH + '/trainset/03'
 
 def getData():
     # Load Training Data
@@ -68,7 +68,7 @@ def main(n_batch, lr_rate, beta1, beta2, n_hidden):
     trainP = P[0:Nlearning, :]
     trainX_total = trainX
     trainP_total = trainP
-    n_copy = 100
+    n_copy = 20
     for i in range(n_copy):
         trainX, trainP = shuffle_data(trainX, trainP)
         trainX_total = np.concatenate((trainX_total, trainX), axis=0)
@@ -81,10 +81,10 @@ def main(n_batch, lr_rate, beta1, beta2, n_hidden):
 
         net = tf.layers.dense(Y, n_hidden[0], activation=tf.nn.sigmoid, kernel_initializer=tf.contrib.layers.xavier_initializer(), name="transe")
         for i, n in enumerate(n_hidden):
-            prenet = net
+            shortcut = net
             net = tf.layers.dense(net, n, activation=tf.nn.sigmoid, kernel_initializer=tf.contrib.layers.xavier_initializer(), name="dense"+str(i)+"_1")
             net = tf.layers.dense(net, n, activation=None, kernel_initializer=tf.contrib.layers.xavier_initializer(), name="dense"+str(i)+"_2")
-            net = tf.nn.sigmoid(tf.add(net, prenet))
+            net = tf.nn.sigmoid(tf.add(net, shortcut))
 
         with tf.name_scope('Xhat'):
             net = tf.layers.dense(net, INPUT_SIZE, activation=tf.nn.sigmoid, name="Xhat")
@@ -124,12 +124,14 @@ def main(n_batch, lr_rate, beta1, beta2, n_hidden):
                 testP[n*n_batch:(n+1)*n_batch, :], [n_batch, OUTPUT_SIZE])
             feed_test = {X: feed_testX, Y: feed_testY}
             test_loss.append(sess.run(loss, feed_dict=feed_test))
-        Xtest = np.reshape(sess.run(Xhat, feed_dict={Y: np.reshape(testP[99, :], [1, OUTPUT_SIZE])}), INPUT_SIZE)
+        Xtest = np.reshape(sess.run(Xhat, feed_dict={Y: np.reshape(testP[99, :], [1, OUTPUT_SIZE])}), newshape=(N_pixel, int(N_pixel/2)))
         plt.figure(1)
         plt.subplot(2, 1, 1)
-        plt.plot(Xtest)
+        plt.imshow(Xtest, cmap='gray')
+        plt.colorbar()
         plt.subplot(2, 1, 2)
-        plt.plot(np.reshape(testX[99, :], INPUT_SIZE))
+        plt.imshow(np.reshape(testX[99, :], newshape=(N_pixel, int(N_pixel/2))), cmap='gray')
+        plt.colorbar()
         print(np.mean(test_loss))
         plt.show()
 
@@ -140,7 +142,7 @@ if __name__ == "__main__":
     parser.add_argument("--lr_rate", type=float, default=1E-3)
     parser.add_argument("--beta1", type=float, default=0.9)
     parser.add_argument("--beta2", type=float, default=0.999)
-    parser.add_argument("--n_hidden", default=[100, 100])
+    parser.add_argument("--n_hidden", default=[100, 100, 100, 100])
     args = parser.parse_args()
     dict = vars(args)
 

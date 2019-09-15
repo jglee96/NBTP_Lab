@@ -41,22 +41,27 @@ def getData():
 
 def broad_reward(R):
     min_R = []
+    max_R = []
     for i in range(R.shape[0]):
         min_R.append(np.min(R[i, :]))
+        max_R.append(np.min(R[i, :]))
     min_R = np.asarray(min_R)
-    return min_R
+    max_R = np.asarray(max_R)
+    return min_R, max_R
 
 
 def main():
     X, P1, P2, P3, P4 = getData()
     print("Load Data Success!!")
 
-    R = broad_reward(P1)
-    T1 = broad_reward(P2)
-    T2 = broad_reward(P3)
-    T3 = broad_reward(P4)
+    R_min, R_max = broad_reward(P1)
+    T1_min, T1_max = broad_reward(P2)
+    T2_min, T2_max = broad_reward(P3)
+    T3_min, T3_max = broad_reward(P4)
 
-    FOM = 2*T1 + T2 + R
+    # FOM = T1_min + T2_min + T3_min + R_min
+    FOM = T1_min + T2_min + T3_min + R_min - 0.2*abs(T1_min-T2_min)
+    # FOM = T1_min + T2_min + T3_min + R_min - abs(T2_min-T2_max)
     FOM_temp = np.reshape(FOM, newshape=(-1, 1))
     rX = X * FOM_temp
     rX = np.sum(rX, axis=0)

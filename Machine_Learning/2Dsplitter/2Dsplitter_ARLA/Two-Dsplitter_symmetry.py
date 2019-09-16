@@ -54,7 +54,8 @@ def main():
 
     r = 1
     center_fact = ((P2min + P2max)/2 + (P3min + P3max)/2)/2
-    FOM = r*((rP2-center_fact) + (rP3-center_fact)) - (1-r)*abs(rP2 - rP3)# linear
+    # FOM = r*((rP2-center_fact) + (rP3-center_fact)) - (1-r)*abs(rP2 - rP3)# linear
+    FOM = rP2 + rP3 - rP1
     # FOM = np.sqrt(((rP2 - center_fact)**2 + (rP3 - center_fact)**2))
     # FOM = rP3
     print("FOM Calculation Success!!", center_fact)

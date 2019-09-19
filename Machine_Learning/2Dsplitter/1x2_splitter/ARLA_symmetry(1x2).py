@@ -55,7 +55,7 @@ def main():
     T2_min, T2_max = broad_reward(P3)
 
 
-    FOM = T1_min + T2_min + R_min
+    FOM = T1_min + R_min
     # FOM = T1_min + T2_min + R_min - abs(T2_min-T2_max)
     FOM_temp = np.reshape(FOM, newshape=(-1, 1))
     rX = X * FOM_temp

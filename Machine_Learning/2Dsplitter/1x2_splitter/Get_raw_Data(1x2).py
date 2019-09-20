@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 PATH = 'D:/NBTP_Lab/Machine_Learning/2Dsplitter/1x2_splitter/trainset'
-Nfile = 17
+Nfile = 20
 
 
 def getData():

@@ -9,7 +9,7 @@ print("======== Design Information ========")
 print('nh: Si, nl: Air')
 
 PATH = 'D:/NBTP_Lab/Machine_Learning/2Dsplitter/1x2_splitter'
-TRAIN_PATH = PATH + '/trainset'
+TRAIN_PATH = PATH + '/trainset/02'
 
 
 def getData():
@@ -28,11 +28,7 @@ def getData():
     port2 = pd.read_csv(port2_name, header=None, delimiter=",")
     P2 = port2.values
 
-    port3_name = TRAIN_PATH + '/PORT3result_total.csv'
-    port3 = pd.read_csv(port3_name, header=None, delimiter=",")
-    P3 = port3.values
-
-    return sX, P1, P2, P3
+    return sX, P1, P2
 
 
 def broad_reward(R):
@@ -47,16 +43,13 @@ def broad_reward(R):
 
 
 def main():
-    X, P1, P2, P3 = getData()
+    X, P1, P2 = getData()
     print("Load Data Success!!")
 
     R_min, R_max = broad_reward(P1)
     T1_min, T1_max = broad_reward(P2)
-    T2_min, T2_max = broad_reward(P3)
 
-
-    FOM = T1_min + R_min
-    # FOM = T1_min + T2_min + R_min - abs(T2_min-T2_max)
+    FOM = 2 * T1_min + R_min
     FOM_temp = np.reshape(FOM, newshape=(-1, 1))
     rX = X * FOM_temp
     rX = np.sum(rX, axis=0)

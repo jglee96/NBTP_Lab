@@ -1,8 +1,8 @@
 import pandas as pd
 import numpy as np
 
-PATH = 'D:/NBTP_Lab/Machine_Learning/2Dsplitter/1x2_splitter/trainset/02'
-Nfile = 55
+PATH = 'D:/NBTP_Lab/Machine_Learning/2Dsplitter/1x2_splitter/trainset/03'
+Nfile = 5
 
 
 def getData():
@@ -36,9 +36,9 @@ def getData():
         port2 = pd.read_csv(port2_name, delimiter=",")
         P2 = port2.values
 
-        port3_name = fPATH + '_PORT3result.csv'
-        port3 = pd.read_csv(port3_name, delimiter=",")
-        P3 = port3.values
+        # port3_name = fPATH + '_PORT3result.csv'
+        # port3 = pd.read_csv(port3_name, delimiter=",")
+        # P3 = port3.values
 
         with open(PATH + '/index.csv', 'a') as fname:
             np.savetxt(fname, sX, fmt='%d', delimiter=',')
@@ -46,8 +46,8 @@ def getData():
             np.savetxt(fname, P1, fmt='%.8f', delimiter=',')
         with open(PATH + '/PORT2result_total.csv', 'a') as fname:
             np.savetxt(fname, P2, fmt='%.8f', delimiter=',')
-        with open(PATH + '/PORT3result_total.csv', 'a') as fname:
-            np.savetxt(fname, P3, fmt='%.8f', delimiter=',')
+        # with open(PATH + '/PORT3result_total.csv', 'a') as fname:
+        #     np.savetxt(fname, P3, fmt='%.8f', delimiter=',')
 
 
 def getIndex():
@@ -129,7 +129,7 @@ def getData_combine():
             np.savetxt(fname, P3, fmt='%.8f', delimiter=',')
 
 if __name__=="__main__":
-    # getData()
-    getIndex()
+    getData()
+    # getIndex()
     # getT()
     # getData_combine()

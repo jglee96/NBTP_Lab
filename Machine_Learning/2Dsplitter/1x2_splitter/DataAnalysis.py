@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-TRAIN_PATH = 'D:/NBTP_Lab/Machine_Learning/2Dsplitter/1x2_splitter/trainset'
+TRAIN_PATH = 'D:/NBTP_Lab/Machine_Learning/2Dsplitter/1x2_splitter/trainset/03'
 
 
 def getData():  # 03
@@ -10,24 +10,19 @@ def getData():  # 03
     print("========      Load Data     ========")
 
     port1_name = TRAIN_PATH + '/PORT1result_total.csv'
-    # port1 = pd.read_csv(port1_name, header=None, delimiter=",")
-    port1 = pd.read_csv(port1_name, delimiter=",")
+    port1 = pd.read_csv(port1_name, header=None, delimiter=",")
+    # port1 = pd.read_csv(port1_name, delimiter=",")
     P1 = port1.values
 
     port2_name = TRAIN_PATH + '/PORT2result_total.csv'
-    # port2 = pd.read_csv(port2_name, header=None, delimiter=",")
-    port2 = pd.read_csv(port2_name, delimiter=",")
+    port2 = pd.read_csv(port2_name, header=None, delimiter=",")
+    # port2 = pd.read_csv(port2_name, delimiter=",")
     P2 = port2.values
-
-    port3_name = TRAIN_PATH + '/PORT3result_total.csv'
-    # port3 = pd.read_csv(port3_name, header=None, delimiter=",")
-    port3 = pd.read_csv(port3_name, delimiter=",")
-    P3 = port3.values
 
     Nsample = P1.shape[0]
     x = np.arange(P1.shape[0])
 
-    return P1, P2, P3, Nsample
+    return P1, P2, Nsample
 
 
 def Tstatic(pav, Nsample):
@@ -58,12 +53,11 @@ def Tstatic(pav, Nsample):
 
 
 def main():
-    _, P2, P3, Nsample = getData()
+    _, P2, Nsample = getData()
 
     P2av = np.average(P2, axis=1)
-    P3av = np.average(P3, axis=1)
 
-    Pt = Tstatic(P2av+P3av, Nsample)
+    Pt = Tstatic(2*P2av, Nsample)
 
     x = np.arange(10)
     Tvalues = ['0,1', '0.2', '0.3', '0.4', '0.5', '0.6', '0.7', '0.8', '0.9', '1.0']

@@ -6,18 +6,16 @@ import argparse
 from datetime import datetime
 
 N_pixel = 20
-INPUT_SIZE = N_pixel * N_pixel
-OUTPUT_SIZE = 50
 
-PATH = 'D:/NBTP_Lab/Machine_Learning/2Dsplitter/2Dsplitter_tensorboard'
-TRAIN_PATH = PATH + '/trainset/11'
+PATH = 'D:/NBTP_Lab/Machine_Learning/2Dsplitter/1x2_splitter_prediction'
+TRAIN_PATH = PATH + '/trainset/03'
 
 
 def getData():
     # Load Training Data
     print("========      Load Data     ========")
 
-    sname = TRAIN_PATH + '/index_total.csv'
+    sname = TRAIN_PATH + '/index.csv'
     Xtemp = pd.read_csv(sname, header=None, delimiter=",")
     sX = Xtemp.values
 
@@ -48,8 +46,10 @@ def main(n_batch, lr_rate, beta1, beta2):
     # Load training data
     sX, P1, P2 = getData()
     Nsample = P1.shape[0]
+    INPUT_SIZE = sX.shape[1]
+    OUTPUT_SIZE = P1.shape[1]
 
-    Nr = 0.9
+    Nr = 0.8
     Nlearning = int(Nr*Nsample)
     Ntest = Nsample - Nlearning
 
@@ -60,7 +60,7 @@ def main(n_batch, lr_rate, beta1, beta2):
     trainP = P2[0:Nlearning, :]
     trainX_total = trainX
     trainP_total = trainP
-    n_copy = 100
+    n_copy = 70
     for i in range(n_copy):
         trainX, trainP = shuffle_data(trainX, trainP)
         trainX_total = np.concatenate((trainX_total, trainX), axis=0)
@@ -70,36 +70,36 @@ def main(n_batch, lr_rate, beta1, beta2):
     X = tf.placeholder(tf.float32, [None, INPUT_SIZE])
 
     ### Input Layer
-    # input: ? * 20 * 20 * 1
-    # output: ? * 20 * 20 * 1
-    net = tf.reshape(tensor=X, shape=[-1, N_pixel, N_pixel, 1], name='input_reshape')
+    # input: ? * 20 * 10 * 1
+    # output: ? * 20 * 10 * 1
+    net = tf.reshape(tensor=X, shape=[-1, N_pixel, int(N_pixel/2), 1], name='input_reshape')
 
     ### Hidden Layer
-    # input: ? * 20 * 20 * 1
-    # output: ? * 20 * 20 * 16
+    # input: ? * 20 * 10 * 1
+    # output: ? * 20 * 10 * 16
     conv = tf.layers.conv2d(
         inputs=net, filters=16, kernel_size=[3, 3], padding="SAME", strides=1)
     bm = tf.layers.batch_normalization(inputs=conv)
     relu = tf.nn.relu(bm)
 
-    # input: ? * 20 * 20 * 1
-    # output: ? * 20 * 20 * 16
+    # input: ? * 20 * 10 * 1
+    # output: ? * 20 * 10 * 16
     res1 = residual_block(relu, 16, False)
     res2 = residual_block(res1, 16, False)
     res3 = residual_block(res2, 16, False)
     res4 = residual_block(res3, 16, False)
     res5 = residual_block(res4, 16, False)
 
-    # input: ? * 20 * 20 * 16
-    # output: ? * 10 * 10 * 32
+    # input: ? * 20 * 10 * 16
+    # output: ? * 10 * 5 * 32
     res6 = residual_block(res5, 32, True)
     res7 = residual_block(res6, 32, False)
     res8 = residual_block(res7, 32, False)
     res9 = residual_block(res8, 32, False)
     res10 = residual_block(res9, 32, False)
 
-    # input: ? * 10 * 10 * 32
-    # output: ? * 5 * 5 * 64
+    # input: ? * 10 * 5 * 32
+    # output: ? * 5 * 3 * 64
     res11 = residual_block(res10, 64, True)
     res12 = residual_block(res11, 64, False)
     res13 = residual_block(res12, 64, False)
@@ -197,7 +197,7 @@ if __name__=="__main__":
     parser = argparse.ArgumentParser(
         description="Physics Net Training")
     parser.add_argument("--n_batch", type=int, default=100)
-    parser.add_argument("--lr_rate", type=float, default=1E-3)
+    parser.add_argument("--lr_rate", type=float, default=1E-5)
     parser.add_argument("--beta1", type=float, default=0.9)
     parser.add_argument("--beta2", type=float, default=0.999)
     args = parser.parse_args()

@@ -109,7 +109,7 @@ def main(n_batch, lr_rate, beta1, beta2, n_hidden):
     loss = tf.reduce_mean(tf.abs(Y - Yhat))
     loss_hist = tf.summary.scalar('loss', loss)
     train = tf.train.AdamOptimizer(learning_rate=lr_rate).minimize(loss)
-    
+
     with tf.Session() as sess:
         # tensorboard
         net.writer = tf.summary.FileWriter(PATH + '/logs/'+datetime.now().strftime("%Y%m%d%H%M"))
@@ -174,7 +174,7 @@ if __name__=="__main__":
         except:
             pass
     print (dict)
-        
+
     kwargs = {  
             'n_batch':dict['n_batch'],
             'lr_rate':dict['lr_rate'],

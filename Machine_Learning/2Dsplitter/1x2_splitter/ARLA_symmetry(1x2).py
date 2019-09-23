@@ -49,7 +49,7 @@ def main():
     R_min, R_max = broad_reward(P1)
     T1_min, T1_max = broad_reward(P2)
 
-    FOM = T1_min + R_min
+    FOM = T1_min
     FOM_temp = np.reshape(FOM, newshape=(-1, 1))
     rX = X * FOM_temp
     rX = np.sum(rX, axis=0)

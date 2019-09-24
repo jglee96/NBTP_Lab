@@ -118,7 +118,10 @@ def main(n_batch, lr_rate, beta1, beta2):
     dimension = shape[1] * shape[2] * shape[3]
     flat = tf.reshape(gap, [-1, dimension])
 
-    Yhat = tf.layers.dense(flat, OUTPUT_SIZE, activation=None, name="Yhat")
+    layer1 = tf.layers.dense(flat, 200, activation=tf.nn.relu)
+    layer2 = tf.layers.dense(layer1, 200, activation=tf.nn.relu)
+    layer3 = tf.layers.dense(layer2, 200, activation=tf.nn.relu)
+    Yhat = tf.layers.dense(layer3, OUTPUT_SIZE, activation=None, name="Yhat")
 
     Y = tf.placeholder(tf.float32, [None, OUTPUT_SIZE])
     loss = tf.reduce_mean(tf.abs(Y - Yhat))
@@ -144,13 +147,16 @@ def main(n_batch, lr_rate, beta1, beta2):
 
         # Test
         test_loss = []
+        test_Y = []
         for n in range(int(Ntest/n_batch)):
             feed_testX = np.reshape(
                 testX[n*n_batch:(n+1)*n_batch, :], [n_batch, INPUT_SIZE])
             feed_testY = np.reshape(
                 testP[n*n_batch:(n+1)*n_batch, :], [n_batch, OUTPUT_SIZE])
             feed_test = {X: feed_testX, Y: feed_testY}
-            test_loss.append(sess.run(loss, feed_dict=feed_test))
+            temp_loss, temp_Y = sess.run([loss, Yhat], feed_dict=feed_test)
+            test_loss.append(temp_loss)
+            test_Y.append(temp_Y)
         Ytest = np.reshape(sess.run(Yhat, feed_dict={X: np.reshape(testX[99, :], [1, INPUT_SIZE])}), OUTPUT_SIZE)
         plt.figure(1)
         plt.subplot(2, 1, 1)
@@ -163,6 +169,17 @@ def main(n_batch, lr_rate, beta1, beta2):
         plt.plot(loss_hist)
         plt.subplot(2, 1, 2)
         plt.plot(test_loss)
+
+        plt.figure(3)
+        testP = testP.flatten()
+        test_Y = np.array(test_Y)
+        test_Y = test_Y.flatten()
+        plt.scatter(testP[:1000], test_Y[:1000])
+
+        e = np.sum(np.square(testP - test_Y))
+        d = np.sum(np.square(testP - np.mean(testP)))
+        R_sq = 1 - e/d
+        print('R-square: {:.2f}'.format(R_sq))
         plt.show()
 
 
@@ -197,7 +214,7 @@ if __name__=="__main__":
     parser = argparse.ArgumentParser(
         description="Physics Net Training")
     parser.add_argument("--n_batch", type=int, default=100)
-    parser.add_argument("--lr_rate", type=float, default=1E-5)
+    parser.add_argument("--lr_rate", type=float, default=1E-3)
     parser.add_argument("--beta1", type=float, default=0.9)
     parser.add_argument("--beta2", type=float, default=0.999)
     args = parser.parse_args()

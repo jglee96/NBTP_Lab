@@ -63,7 +63,7 @@ def main():
     rX = X * FOM_temp
     rX = np.sum(rX, axis=0)
 
-    minX = np.min(rX)
+    minX = np.mean(rX)
     rX = rX - minX
     avgX = np.mean(rX)
 

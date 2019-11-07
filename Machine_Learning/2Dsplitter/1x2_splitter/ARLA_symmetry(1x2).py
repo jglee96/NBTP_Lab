@@ -9,8 +9,8 @@ print("======== Design Information ========")
 print('nh: Si, nl: Air')
 
 PATH = 'D:/NBTP_Lab/Machine_Learning/2Dsplitter/1x2_splitter'
-TRAIN_PATH = PATH + '/trainset/03'
-Nfile = 50
+TRAIN_PATH = PATH + '/trainset/04'
+Nfile = 30
 
 
 def getData(mode):
@@ -64,22 +64,27 @@ def getData(mode):
 def broad_reward(R):
     min_R = []
     max_R = []
+    mean_R = []
     for i in range(R.shape[0]):
         min_R.append(np.min(R[i, :]))
         max_R.append(np.max(R[i, :]))
+        mean_R.append(np.mean(R[i, :]))
     min_R = np.asarray(min_R)
     max_R = np.asarray(max_R)
-    return min_R, max_R
+    mean_R = np.asarray(mean_R)
+    return min_R, max_R, mean_R
 
 
 def main():
     X, P1, P2 = getData(mode='unpack')
     print("Load Data Success!!")
 
-    R_min, R_max = broad_reward(P1)
-    T1_min, T1_max = broad_reward(P2)
+    R_min, R_max, R_mean = broad_reward(P1)
+    T1_min, T1_max, T1_mean = broad_reward(P2)
 
-    FOM = T1_min + R_min
+    # FOM = T1_min + R_min
+    # FOM = T1_min
+    FOM = T1_mean
     FOM_temp = np.reshape(FOM, newshape=(-1, 1))
     rX = X * FOM_temp
     rX = np.sum(rX, axis=0)

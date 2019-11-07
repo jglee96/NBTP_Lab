@@ -2,25 +2,56 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-TRAIN_PATH = 'D:/NBTP_Lab/Machine_Learning/2Dsplitter/1x2_splitter/trainset/03'
+TRAIN_PATH = 'D:/NBTP_Lab/Machine_Learning/2Dsplitter/1x2_splitter/trainset/04'
+Nfile = 30
 
 
-def getData():  # 03
+def getData(mode):
     # Load Training Data
     print("========      Load Data     ========")
 
-    port1_name = TRAIN_PATH + '/PORT1result_total.csv'
-    port1 = pd.read_csv(port1_name, header=None, delimiter=",")
-    # port1 = pd.read_csv(port1_name, delimiter=",")
-    P1 = port1.values
+    if mode == 'pack':
+        sname = TRAIN_PATH + '/index.csv'
+        Xtemp = pd.read_csv(sname, header=None, delimiter=",")
+        sX = Xtemp.values
 
-    port2_name = TRAIN_PATH + '/PORT2result_total.csv'
-    port2 = pd.read_csv(port2_name, header=None, delimiter=",")
-    # port2 = pd.read_csv(port2_name, delimiter=",")
-    P2 = port2.values
+        port1_name = TRAIN_PATH + '/PORT1result_total.csv'
+        port1 = pd.read_csv(port1_name, header=None, delimiter=",")
+        P1 = port1.values
+
+        port2_name = TRAIN_PATH + '/PORT2result_total.csv'
+        port2 = pd.read_csv(port2_name, header=None, delimiter=",")
+        P2 = port2.values
+    elif mode == 'unpack':
+        for n in range(Nfile):
+            sname = TRAIN_PATH + '/' + str(n) + '_index.txt'
+            Xintarray = []
+            Xtemp = pd.read_csv(sname, header=None, delimiter=",")
+            Xstrarray = Xtemp.values
+            for j in range(Xstrarray.shape[0]):
+                temp = Xstrarray[j][0]
+                temp = list(map(int, temp))
+                Xintarray.append(temp)
+            tempX = np.asarray(Xintarray)
+
+            port1_name = TRAIN_PATH + '/' + str(n) + '_PORT1result.csv'
+            port1 = pd.read_csv(port1_name, delimiter=",")
+            tempP1 = port1.values
+
+            port2_name = TRAIN_PATH + '/' + str(n) + '_PORT2result.csv'
+            port2 = pd.read_csv(port2_name, delimiter=",")
+            tempP2 = port2.values
+
+            if n == 0:
+                sX = tempX
+                P1 = tempP1
+                P2 = tempP2
+            else:
+                sX = np.concatenate((sX, tempX), axis=0)
+                P1 = np.concatenate((P1, tempP1), axis=0)
+                P2 = np.concatenate((P2, tempP1), axis=0)
 
     Nsample = P1.shape[0]
-    x = np.arange(P1.shape[0])
 
     return P1, P2, Nsample
 
@@ -53,7 +84,7 @@ def Tstatic(pav, Nsample):
 
 
 def main():
-    _, P2, Nsample = getData()
+    _, P2, Nsample = getData(mode='unpack')
 
     P2av = np.average(P2, axis=1)
 

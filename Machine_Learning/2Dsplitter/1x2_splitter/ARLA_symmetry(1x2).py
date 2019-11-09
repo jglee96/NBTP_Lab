@@ -10,7 +10,7 @@ print('nh: Si, nl: Air')
 
 PATH = 'D:/NBTP_Lab/Machine_Learning/2Dsplitter/1x2_splitter'
 TRAIN_PATH = PATH + '/trainset/04'
-Nfile = 30
+Nfile = 40
 
 
 def getData(mode):
@@ -56,7 +56,7 @@ def getData(mode):
             else:
                 sX = np.concatenate((sX, tempX), axis=0)
                 P1 = np.concatenate((P1, tempP1), axis=0)
-                P2 = np.concatenate((P2, tempP1), axis=0)
+                P2 = np.concatenate((P2, tempP2), axis=0)
 
     return sX, P1, P2
 
@@ -83,8 +83,8 @@ def main():
     T1_min, T1_max, T1_mean = broad_reward(P2)
 
     # FOM = T1_min + R_min
-    # FOM = T1_min
-    FOM = T1_mean
+    FOM = T1_min
+    # FOM = T1_mean
     FOM_temp = np.reshape(FOM, newshape=(-1, 1))
     rX = X * FOM_temp
     rX = np.sum(rX, axis=0)

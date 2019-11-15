@@ -1,0 +1,4 @@
+File: 1x2_splitter(TM)
+TM mode
+275 - 325 um (26 points)
+Air hole

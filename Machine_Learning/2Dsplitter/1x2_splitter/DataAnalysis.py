@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-TRAIN_PATH = 'D:/NBTP_Lab/Machine_Learning/2Dsplitter/1x2_splitter/trainset/04'
+TRAIN_PATH = 'D:/NBTP_Lab/Machine_Learning/2Dsplitter/1x2_splitter/trainset/05'
 Nfile = 40
 
 
@@ -15,12 +15,12 @@ def getData(mode):
         Xtemp = pd.read_csv(sname, header=None, delimiter=",")
         sX = Xtemp.values
 
-        port1_name = TRAIN_PATH + '/PORT1result_total.csv'
-        port1 = pd.read_csv(port1_name, header=None, delimiter=",")
+        port1_name = TRAIN_PATH + '/PORT1result.csv'
+        port1 = pd.read_csv(port1_name, delimiter=",")
         P1 = port1.values
 
-        port2_name = TRAIN_PATH + '/PORT2result_total.csv'
-        port2 = pd.read_csv(port2_name, header=None, delimiter=",")
+        port2_name = TRAIN_PATH + '/PORT2result.csv'
+        port2 = pd.read_csv(port2_name, delimiter=",")
         P2 = port2.values
     elif mode == 'unpack':
         for n in range(Nfile):
@@ -91,7 +91,7 @@ def TdBstatic(pav, Nsample):
 
 
 def main():
-    _, T, Nsample = getData(mode='unpack')
+    _, T, Nsample = getData(mode='pack')
 
     Tmin = np.min(T, axis=1)
     Tmean = np.mean(T, axis=1)

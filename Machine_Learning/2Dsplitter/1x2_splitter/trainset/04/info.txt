@@ -1,3 +1,4 @@
 File: 1x2_splitter(TM_SiO2)
 TM mode
 275 - 325 um (26 points)
+SiO2 hole

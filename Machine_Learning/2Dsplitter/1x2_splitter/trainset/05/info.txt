@@ -1,0 +1,4 @@
+File: 1x2_splitter(TM_SiO2)
+TE mode
+275 - 325 um (26 points)
+Lumerical Particle Swam Optimization

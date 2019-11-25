@@ -10,7 +10,8 @@ INPUT_SIZE = N_pixel * int(N_pixel/2)
 OUTPUT_SIZE = 26
 
 PATH = 'D:/NBTP_Lab/Machine_Learning/2Dsplitter/1x2_splitter'
-TRAIN_PATH = PATH + '/trainset/05'
+TRAIN_PATH = PATH + '/trainset/06'
+Nfile = 12
 
 
 def binaryRound(x):
@@ -44,22 +45,20 @@ def getData(mode):
         P2 = port2.values
     elif mode == 'unpack':
         for n in range(Nfile):
-            sname = TRAIN_PATH + '/' + str(n) + '_index.txt'
-            Xintarray = []
-            Xtemp = pd.read_csv(sname, header=None, delimiter=",")
-            Xstrarray = Xtemp.values
-            for j in range(Xstrarray.shape[0]):
-                temp = Xstrarray[j][0]
-                temp = list(map(int, temp))
-                Xintarray.append(temp)
-            tempX = np.asarray(Xintarray)
-            # file error check
-            if n == 0:
-                pre_len_check = Xstrarray.shape[0]
-            len_check = Xstrarray.shape[0]
-            if pre_len_check != len_check:
-                print(n, len_check)
-            pre_len_check = len_check
+            try:
+                sname = TRAIN_PATH + '/' + str(n) + '_index.txt'
+                Xintarray = []
+                Xtemp = pd.read_csv(sname, header=None, delimiter=",")
+                Xstrarray = Xtemp.values
+                for j in range(Xstrarray.shape[0]):
+                    temp = Xstrarray[j][0]
+                    temp = list(map(int, temp))
+                    Xintarray.append(temp)
+                tempX = np.asarray(Xintarray)
+            except:
+                sname = TRAIN_PATH + '/' + str(n) + '_index.csv'
+                Xtemp = pd.read_csv(sname, header=None, delimiter=",")
+                tempX = Xtemp.values
 
             port1_name = TRAIN_PATH + '/' + str(n) + '_PORT1result.csv'
             port1 = pd.read_csv(port1_name, delimiter=",")
@@ -93,9 +92,8 @@ def shuffle_data(X, P1):
 
 
 def Ratio_Optimization(
-    output_folder, weight_name_save, n_batch, lr_rate, beta1, beta2,
-    decay_steps, lr_decay, momentum, nesterov, num_layers, reg_beta,
-    RNnum_block, n_hidden, Dense_list):
+                        output_folder, weight_name_save, n_batch, lr_rate,
+                        beta1, beta2, num_layers, n_hidden):
 
     init_list_rand = tf.constant(np.random.randint(2, size=(1, INPUT_SIZE)), dtype=tf.float32)
     X = tf.get_variable(name='b', initializer=init_list_rand)
@@ -114,7 +112,7 @@ def Ratio_Optimization(
 
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
-        for n in range(100000):
+        for n in range(20000):
             sess.run(optimizer)
             if (n % 100) == 0:
                 check_cost = sess.run(cost)
@@ -147,12 +145,11 @@ def Ratio_Optimization(
 
 
 def main(
-    output_folder, weight_name_save, n_batch, lr_rate, beta1, beta2,
-    decay_steps, lr_decay, momentum, nesterov, num_layers, reg_beta,
-    RNnum_block, n_hidden, Dense_list):
+         output_folder, weight_name_save, n_batch, lr_rate, beta1, beta2,
+         num_layers, n_hidden):
 
     # Load training data
-    sX, _, P2 = getData(mode='pack')
+    sX, _, P2 = getData(mode='unpack')
     Nsample = sX.shape[0]
 
     Nr = 0.9
@@ -167,7 +164,7 @@ def main(
     trainY = P2[0:Nlearning, :]
     trainX_total = trainX
     trainY_total = trainY
-    n_copy = 10
+    n_copy = 5
     for i in range(n_copy):
         trainX_total = np.concatenate((trainX_total, trainX), axis=0)
         trainY_total = np.concatenate((trainY_total, trainY), axis=0)
@@ -225,7 +222,10 @@ def main(
             test_loss.append(temp)
 
         # Example test
-        test = np.reshape(sess.run(Yhat, feed_dict={X: np.reshape(testX[99, :], [1, INPUT_SIZE])}), OUTPUT_SIZE)
+        tloss, test = sess.run([loss, Yhat], feed_dict={
+            X: np.reshape(testX[99, :], [1, INPUT_SIZE]),
+            Y: np.reshape(testY[99, :], [1, OUTPUT_SIZE])})
+        test = np.reshape(test, OUTPUT_SIZE)
         plt.figure(1)
         plt.subplot(2, 1, 1)
         plt.plot(test)
@@ -233,6 +233,7 @@ def main(
         plt.subplot(2, 1, 2)
         plt.plot(np.reshape(testY[99, :], OUTPUT_SIZE))
         # plt.ylim(0.0, 0.5)
+        print(tloss)
 
         plt.figure(2)
         plt.plot(train_loss)
@@ -246,13 +247,6 @@ def main(
 
 
 if __name__=="__main__":
-    # for lr_rate in [1E-2, 5E-3, 1E-3, 5E-4, 1E-4]:
-    #     for beta1 in [0.9, 0.7, 0.5, 0.3]:
-    #         for beta2 in [0.999, 0.9, 0.7, 0.5, 0.3]:
-        # for lr_decay in [0.9, 0.5, 0.2]:
-        #     for decay_steps in [10, 50, 100, 500]:
-        #         for momentum in [0.9, 0.7, 0.5, 0.3, 0.1]:
-        #             for nesterov in [True, False]:
     parser = argparse.ArgumentParser(
         description="Physics Net Training")
     parser.add_argument("--output_folder",type=str, default='D:/NBTP_Lab/Machine_Learning/2Dsplitter/1x2_splitter/NN_parameter')
@@ -261,18 +255,10 @@ if __name__=="__main__":
     parser.add_argument("--lr_rate", type=float, default=1E-3) # 4-0.0055
     parser.add_argument("--beta1", type=float, default=0.9)
     parser.add_argument("--beta2", type=float, default=0.999)
-    parser.add_argument("--lr_decay", type=float, default=0.9) # 4-0.9
-    parser.add_argument("--decay_steps", type=float, default=50)
-    parser.add_argument("--momentum", type=float, default=0.9)
-    parser.add_argument("--nesterov", type=bool, default=True)
     parser.add_argument("--num_layers", default=4)
-    parser.add_argument("--reg_beta", type=float, default=0.01)
-    parser.add_argument("--RNnum_block", default=5)
-    parser.add_argument("--n_hidden", default=100)
-    parser.add_argument("--Dense_list", default=[4, 4, 4])
+    parser.add_argument("--n_hidden", default=50)
     args = parser.parse_args()
     dict = vars(args)
-    print(dict)
 
     for key, value in dict.items():
         if (dict[key] == "False"):
@@ -295,16 +281,9 @@ if __name__=="__main__":
             'lr_rate': dict['lr_rate'],
             'beta1': dict['beta1'],
             'beta2': dict['beta2'],
-            'lr_decay': dict['lr_decay'],
-            'decay_steps': dict['decay_steps'],
-            'momentum': dict['momentum'],
-            'nesterov': dict['nesterov'],
             'num_layers': int(dict['num_layers']),
-            'reg_beta': dict['reg_beta'],
-            'RNnum_block': int(dict['RNnum_block']),
-            'n_hidden': int(dict['n_hidden']),
-            'Dense_list': dict['Dense_list']
+            'n_hidden': int(dict['n_hidden'])
         }
 
-    # main(**kwargs)
-    Ratio_Optimization(**kwargs)
+    main(**kwargs)
+    # Ratio_Optimization(**kwargs)

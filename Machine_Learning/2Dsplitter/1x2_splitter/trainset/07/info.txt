@@ -1,0 +1,4 @@
+File: Si_sample(20190705_symmetry)
+TM mode
+250 - 350 um (100 points)
+paper result trainset

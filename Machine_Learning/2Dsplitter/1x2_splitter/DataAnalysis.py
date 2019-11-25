@@ -2,8 +2,9 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-TRAIN_PATH = 'D:/NBTP_Lab/Machine_Learning/2Dsplitter/1x2_splitter/trainset/05'
-Nfile = 40
+TRAIN_PATH = 'D:/NBTP_Lab/Machine_Learning/2Dsplitter/1x2_splitter/trainset/03'
+Nfile = 101
+
 
 
 def getData(mode):
@@ -24,15 +25,20 @@ def getData(mode):
         P2 = port2.values
     elif mode == 'unpack':
         for n in range(Nfile):
-            sname = TRAIN_PATH + '/' + str(n) + '_index.txt'
-            Xintarray = []
-            Xtemp = pd.read_csv(sname, header=None, delimiter=",")
-            Xstrarray = Xtemp.values
-            for j in range(Xstrarray.shape[0]):
-                temp = Xstrarray[j][0]
-                temp = list(map(int, temp))
-                Xintarray.append(temp)
-            tempX = np.asarray(Xintarray)
+            try:
+                sname = TRAIN_PATH + '/' + str(n) + '_index.txt'
+                Xintarray = []
+                Xtemp = pd.read_csv(sname, header=None, delimiter=",")
+                Xstrarray = Xtemp.values
+                for j in range(Xstrarray.shape[0]):
+                    temp = Xstrarray[j][0]
+                    temp = list(map(int, temp))
+                    Xintarray.append(temp)
+                tempX = np.asarray(Xintarray)
+            except:
+                sname = TRAIN_PATH + '/' + str(n) + '_index.csv'
+                Xtemp = pd.read_csv(sname, header=None, delimiter=",")
+                tempX = Xtemp.values
 
             port1_name = TRAIN_PATH + '/' + str(n) + '_PORT1result.csv'
             port1 = pd.read_csv(port1_name, delimiter=",")
@@ -91,7 +97,7 @@ def TdBstatic(pav, Nsample):
 
 
 def main():
-    _, T, Nsample = getData(mode='pack')
+    _, T, Nsample = getData(mode='unpack')
 
     Tmin = np.min(T, axis=1)
     Tmean = np.mean(T, axis=1)
@@ -105,6 +111,7 @@ def main():
     TdBmin_bar = TdBstatic(TdBmin, Nsample)
     TdBmean_bar = TdBstatic(TdBmean, Nsample)
 
+    print("data number: ", Nsample)
     plt.figure(1)
     x = np.arange(5)
     Tvalues = ['0.1', '0.2', '0.3', '0.4', '0.5']

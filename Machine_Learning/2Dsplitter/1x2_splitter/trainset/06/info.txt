@@ -1,0 +1,5 @@
+File: 1x2_splitter(TM_air)
+TM mode
+275 - 325 um (26 points)
+0~1: Lumerical Particle Swam Optimization
+2~11: Random

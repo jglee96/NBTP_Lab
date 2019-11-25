@@ -9,11 +9,11 @@ print("======== Design Information ========")
 print('nh: Si, nl: Air')
 
 PATH = 'D:/NBTP_Lab/Machine_Learning/2Dsplitter/1x2_splitter'
-TRAIN_PATH = PATH + '/trainset/03'
-Nfile = 50
+TRAIN_PATH = PATH + '/trainset/07'
+Nfile = 101
 
 
-def getData(mode):
+def getData(mode, header):
     # Load Training Data
     print("========      Load Data     ========")
 
@@ -23,11 +23,11 @@ def getData(mode):
         sX = Xtemp.values
 
         port1_name = TRAIN_PATH + '/PORT1result.csv'
-        port1 = pd.read_csv(port1_name, delimiter=",")
+        port1 = pd.read_csv(port1_name, header=header, delimiter=",")
         P1 = port1.values
 
         port2_name = TRAIN_PATH + '/PORT2result.csv'
-        port2 = pd.read_csv(port2_name, delimiter=",")
+        port2 = pd.read_csv(port2_name, header=header, delimiter=",")
         P2 = port2.values
     elif mode == 'unpack':
         for n in range(Nfile):
@@ -49,11 +49,11 @@ def getData(mode):
             pre_len_check = len_check
 
             port1_name = TRAIN_PATH + '/' + str(n) + '_PORT1result.csv'
-            port1 = pd.read_csv(port1_name, delimiter=",")
+            port1 = pd.read_csv(port1_name, header=header, delimiter=",")
             tempP1 = port1.values
 
             port2_name = TRAIN_PATH + '/' + str(n) + '_PORT2result.csv'
-            port2 = pd.read_csv(port2_name, delimiter=",")
+            port2 = pd.read_csv(port2_name, header=header, delimiter=",")
             tempP2 = port2.values
 
             if n == 0:
@@ -83,14 +83,16 @@ def broad_reward(R):
 
 
 def main():
-    X, P1, P2 = getData(mode='unpack')
+    X, P1, P2 = getData(mode='unpack', header=None)
     print("Load Data Success!!")
 
     R_min, R_max, R_mean = broad_reward(P1)
     T1_min, T1_max, T1_mean = broad_reward(P2)
-
-    FOM = T1_min + R_min
-    # FOM = T1_mean + R_mean
+    # TdBmin = 10 * np.log10(T1_min + 1e-7)
+    # FOM = TdBmin
+    # FOM = T1_min
+    # FOM = T1_min + R_min
+    FOM = T1_mean + R_mean
     # FOM = T1_mean
     FOM_temp = np.reshape(FOM, newshape=(-1, 1))
     rX = X * FOM_temp

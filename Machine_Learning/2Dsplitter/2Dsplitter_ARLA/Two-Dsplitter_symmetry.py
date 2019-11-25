@@ -10,7 +10,7 @@ bandwidth = 10e-6
 
 # Base data
 print("======== Design Information ========")
-print('tarwave: {}um, nh: Si, nl: Air'.format(tarwave))
+print('tarwave: {}um, nh: Si, nl: Air'.format(tarwave*10**6))
 
 PATH = 'D:/NBTP_Lab/Machine_Learning/2Dsplitter/2Dsplitter_ARLA'
 TRAIN_PATH = PATH + '/trainset/04'
@@ -25,6 +25,7 @@ def getData():
 
     port1_name = TRAIN_PATH + '/PORT1result_total.csv'
     port1 = pd.read_csv(port1_name, header=None, delimiter=",")
+    # port1 = pd.read_csv(port1_name, delimiter=",")
     P1 = port1.values
 
     port2_name = TRAIN_PATH + '/PORT2result_total.csv'
@@ -57,13 +58,13 @@ def main():
     # FOM = r*((rP2-center_fact) + (rP3-center_fact)) - (1-r)*abs(rP2 - rP3)# linear
     FOM = rP2 + rP3 - rP1
     # FOM = np.sqrt(((rP2 - center_fact)**2 + (rP3 - center_fact)**2))
-    # FOM = rP3
+    # FOM = rP3 - rP1
     print("FOM Calculation Success!!", center_fact)
     FOM_temp = np.reshape(FOM, newshape=(-1, 1))
     rX = X * FOM_temp
     rX = np.sum(rX, axis=0)
 
-    minX = np.mean(rX)
+    minX = np.min(rX)
     rX = rX - minX
     avgX = np.mean(rX)
 
@@ -76,9 +77,9 @@ def main():
     print('[', end='')
     for i,  index1 in enumerate(print_result):
         for j, index2 in enumerate(index1):
-            if j == (int(N_pixel/2) -1) and i != (N_pixel-1):
+            if j == (int(N_pixel/2) - 1) and i != (N_pixel-1):
                 print(str(index2) + ';')
-            elif j == (int(N_pixel/2) -1) and i == (N_pixel-1):
+            elif j == (int(N_pixel/2) - 1) and i == (N_pixel-1):
                 print(str(index2) + '];')
             else:
                 print(str(index2) + ',', end='')

@@ -63,18 +63,28 @@ def getData(mode):
 
 
 def Tstatic(pav, Nsample):
-    tstack = [0, 0, 0, 0, 0]
+    tstack = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     for i in range(Nsample):
-        if pav[i] >= 0 and pav[i] < 0.1:
+        if pav[i] >= 0 and pav[i] < 0.05:
             tstack[0] += 1
-        elif pav[i] >= 0.1 and pav[i] < 0.2:
+        elif pav[i] >= 0.05 and pav[i] < 0.1:
             tstack[1] += 1
-        elif pav[i] >= 0.2 and pav[i] < 0.3:
+        elif pav[i] >= 0.1 and pav[i] < 0.15:
             tstack[2] += 1
-        elif pav[i] >= 0.3 and pav[i] < 0.4:
+        elif pav[i] >= 0.15 and pav[i] < 0.2:
             tstack[3] += 1
-        elif pav[i] >= 0.4 and pav[i] <= 0.5:
+        elif pav[i] >= 0.2 and pav[i] < 0.25:
             tstack[4] += 1
+        elif pav[i] >= 0.25 and pav[i] <= 0.3:
+            tstack[5] += 1
+        elif pav[i] >= 0.3 and pav[i] <= 0.35:
+            tstack[6] += 1
+        elif pav[i] >= 0.35 and pav[i] <= 0.4:
+            tstack[7] += 1
+        elif pav[i] >= 0.4 and pav[i] <= 0.45:
+            tstack[8] += 1
+        elif pav[i] >= 0.45 and pav[i] <= 0.5:
+            tstack[9] += 1
 
     return tstack
 
@@ -113,14 +123,19 @@ def main():
 
     print("data number: ", Nsample)
     plt.figure(1)
-    x = np.arange(5)
-    Tvalues = ['0.1', '0.2', '0.3', '0.4', '0.5']
+    x = np.arange(10)
+    Tvalues = ['0.05', '0.1', '0.15', '0.2', '0.25', '0.3', '0.35', '0.4', '0.45', '0.5']
     plt.bar(x, Tmin_bar)
     plt.xticks(x, Tvalues)
 
+    with open(TRAIN_PATH + '/Data_distribution(min).csv', "a") as sf:
+        np.savetxt(sf, np.reshape(np.arange(0.05, 0.55, 0.05), (1, len(Tvalues))), fmt='%.2f', delimiter=',')
+    with open(TRAIN_PATH + '/Data_distribution(min).csv', "a") as sf:
+        np.savetxt(sf, np.reshape(Tmin_bar, (1, len(Tmin_bar))), fmt='%d', delimiter=',')
+
     plt.figure(2)
-    x = np.arange(5)
-    Tvalues = ['0.1', '0.2', '0.3', '0.4', '0.5']
+    x = np.arange(10)
+    Tvalues = ['0.05', '0.1', '0.15', '0.2', '0.25', '0.3', '0.35', '0.4', '0.45', '0.5']
     plt.bar(x, Tmean_bar)
     plt.xticks(x, Tvalues)
 

@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import argparse
+from scipy.stats import pearsonr
 from splitter_core import *
 
 N_pixel = 20
@@ -89,6 +90,13 @@ def shuffle_data(X, P1):
     P1 = P1[x, :]
 
     return X, P1
+
+
+def corr_coef(x, y):
+
+    corr, _ = pearsonr(x, y)
+
+    return corr
 
 
 def Ratio_Optimization(
@@ -213,6 +221,8 @@ def main(
 
         # Test
         test_loss = []
+        cc_x = []
+        cc_y = []
         test_batch = int(n_batch/20)
         for n in range(int(Ntest/test_batch)):
             input_X = np.reshape(testX[n*test_batch:(n+1)*test_batch], [test_batch, INPUT_SIZE])
@@ -220,6 +230,8 @@ def main(
             feed = {X: input_X, Y: output_Y}
             temp = sess.run(loss, feed_dict=feed)
             test_loss.append(temp)
+            cc_x.append(np.mean(testY[n*test_batch]))
+            cc_y.append(np.mean(sess.run(Yhat, feed_dict={X: np.reshape(testX[n*test_batch], [1, INPUT_SIZE])})))
 
         # Example test
         tloss, test = sess.run([loss, Yhat], feed_dict={
@@ -237,9 +249,22 @@ def main(
 
         plt.figure(2)
         plt.plot(train_loss)
+        # with open(PATH + '/Training_loss(NN).csv', 'w') as lossfile:
+        #     np.savetxt(lossfile, train_loss, delimiter=',', fmt='%.5f')
 
         plt.figure(3)
         plt.plot(test_loss)
+        # with open(PATH + '/Test_loss(NN).csv', 'w') as lossfile:
+        #     np.savetxt(lossfile, test_loss, delimiter=',', fmt='%.5f')
+
+        plt.figure(4)
+        plt.scatter(cc_x, cc_y)
+        corr = corr_coef(cc_x, cc_y)
+        print(corr)
+        with open(PATH + '/Corr(NN).csv', 'w') as lossfile:
+            np.savetxt(lossfile, np.reshape(cc_x, [1, len(cc_x)]), delimiter=',', fmt='%.5f')
+        with open(PATH + '/Corr(NN).csv', 'a') as lossfile:
+            np.savetxt(lossfile, np.reshape(cc_y, [1, len(cc_y)]), delimiter=',', fmt='%.5f')
 
         test_loss_mean = sum(test_loss) / len(test_loss)
         print(test_loss_mean)
@@ -256,7 +281,7 @@ if __name__=="__main__":
     parser.add_argument("--beta1", type=float, default=0.9)
     parser.add_argument("--beta2", type=float, default=0.999)
     parser.add_argument("--num_layers", default=4)
-    parser.add_argument("--n_hidden", default=50)
+    parser.add_argument("--n_hidden", default=100)
     args = parser.parse_args()
     dict = vars(args)
 

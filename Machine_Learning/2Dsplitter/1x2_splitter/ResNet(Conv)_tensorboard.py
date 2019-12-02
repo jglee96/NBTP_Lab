@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import argparse
+from scipy.stats import pearsonr
 from datetime import datetime
 
 N_pixel = 20
@@ -76,6 +77,13 @@ def shuffle_data(X, P1):
     P1 = P1[x, :]
 
     return X, P1
+
+
+def corr_coef(x, y):
+
+    corr, _ = pearsonr(x, y)
+
+    return corr
 
 
 def main(n_batch, lr_rate, beta1, beta2):
@@ -181,6 +189,8 @@ def main(n_batch, lr_rate, beta1, beta2):
 
         # Test
         test_loss = []
+        cc_x = []
+        cc_y = []
         test_batch = int(n_batch/20)
         for n in range(int(Ntest/test_batch)):
             feed_testX = np.reshape(
@@ -189,6 +199,8 @@ def main(n_batch, lr_rate, beta1, beta2):
                 testY[n*test_batch:(n+1)*test_batch, :], [test_batch, OUTPUT_SIZE])
             feed_test = {X: feed_testX, Y: feed_testY}
             test_loss.append(sess.run(loss, feed_dict=feed_test))
+            cc_x.append(np.mean(testY[n*test_batch]))
+            cc_y.append(np.mean(sess.run(Yhat, feed_dict={X: np.reshape(testX[n*test_batch], [1, INPUT_SIZE])})))
 
         # Example test
         tloss, test = sess.run([loss, Yhat], feed_dict={
@@ -206,9 +218,22 @@ def main(n_batch, lr_rate, beta1, beta2):
 
         plt.figure(2)
         plt.plot(train_loss)
+        # with open(PATH + '/Training_loss(ResNet).csv', 'w') as lossfile:
+        #     np.savetxt(lossfile, train_loss, delimiter=',', fmt='%.5f')
 
         plt.figure(3)
         plt.plot(test_loss)
+        # with open(PATH + '/Test_loss(ResNet).csv', 'w') as lossfile:
+        #     np.savetxt(lossfile, test_loss, delimiter=',', fmt='%.5f')
+
+        plt.figure(4)
+        plt.scatter(cc_x, cc_y)
+        corr = corr_coef(cc_x, cc_y)
+        print(corr)
+        with open(PATH + '/Corr(ResNet).csv', 'w') as lossfile:
+            np.savetxt(lossfile, np.reshape(cc_x, [1, len(cc_x)]), delimiter=',', fmt='%.5f')
+        with open(PATH + '/Corr(ResNet).csv', 'a') as lossfile:
+            np.savetxt(lossfile, np.reshape(cc_y, [1, len(cc_y)]), delimiter=',', fmt='%.5f')
 
         test_loss_mean = sum(test_loss) / len(test_loss)
         print(test_loss_mean)
@@ -227,13 +252,13 @@ def residual_block(X, num_filter, chg_dim):
         shortcut = X
 
     conv1 = tf.layers.conv2d(
-        inputs=X, filters=num_filter, kernel_size=[3, 3], padding='SAME',
+        inputs=X, filters=num_filter, kernel_size=[4, 4], padding='SAME',
         strides=stride, kernel_initializer=tf.contrib.layers.xavier_initializer())
     bm1 = tf.layers.batch_normalization(inputs=conv1)
     relu1 = tf.nn.relu(bm1)
 
     conv2 = tf.layers.conv2d(
-        inputs=relu1, filters=num_filter, kernel_size=[3, 3],
+        inputs=relu1, filters=num_filter, kernel_size=[4, 4],
         padding='SAME', strides=1, kernel_initializer=tf.contrib.layers.xavier_initializer())
     bm2 = tf.layers.batch_normalization(inputs=conv2)
 
@@ -246,7 +271,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Physics Net Training")
     parser.add_argument("--n_batch", type=int, default=100)
-    parser.add_argument("--lr_rate", type=float, default=1E-4)
+    parser.add_argument("--lr_rate", type=float, default=1E-3)
     parser.add_argument("--beta1", type=float, default=0.9)
     parser.add_argument("--beta2", type=float, default=0.999)
     args = parser.parse_args()

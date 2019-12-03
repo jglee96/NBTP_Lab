@@ -165,7 +165,6 @@ def main(n_batch, lr_rate, beta1, beta2):
     Yhat = tf.layers.dense(flat, OUTPUT_SIZE, activation=None, name="Yhat")
 
     Y = tf.placeholder(tf.float32, [None, OUTPUT_SIZE])
-    # loss = tf.reduce_mean(tf.square(Y - Yhat))
     loss = tf.reduce_mean(tf.square(Y - Yhat))
     loss_hist = tf.summary.scalar('loss', loss)
     train = tf.train.AdamOptimizer(learning_rate=lr_rate).minimize(loss)
@@ -230,10 +229,10 @@ def main(n_batch, lr_rate, beta1, beta2):
         plt.scatter(cc_x, cc_y)
         corr = corr_coef(cc_x, cc_y)
         print(corr)
-        with open(PATH + '/Corr(ResNet).csv', 'w') as lossfile:
-            np.savetxt(lossfile, np.reshape(cc_x, [1, len(cc_x)]), delimiter=',', fmt='%.5f')
-        with open(PATH + '/Corr(ResNet).csv', 'a') as lossfile:
-            np.savetxt(lossfile, np.reshape(cc_y, [1, len(cc_y)]), delimiter=',', fmt='%.5f')
+        # with open(PATH + '/Corr(ResNet).csv', 'w') as lossfile:
+        #     np.savetxt(lossfile, np.reshape(cc_x, [1, len(cc_x)]), delimiter=',', fmt='%.5f')
+        # with open(PATH + '/Corr(ResNet).csv', 'a') as lossfile:
+        #     np.savetxt(lossfile, np.reshape(cc_y, [1, len(cc_y)]), delimiter=',', fmt='%.5f')
 
         test_loss_mean = sum(test_loss) / len(test_loss)
         print(test_loss_mean)

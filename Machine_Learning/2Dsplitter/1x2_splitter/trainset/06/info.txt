@@ -3,3 +3,4 @@ TM mode
 275 - 325 um (26 points)
 0~1: Lumerical Particle Swam Optimization
 2~11: Random
+8200+7600+10*1000 = 25800

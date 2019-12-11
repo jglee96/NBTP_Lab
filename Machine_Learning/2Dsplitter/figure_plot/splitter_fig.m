@@ -3,8 +3,8 @@ close all;
 
 c = 299792458;
 %% Splitter %%
-Splitter_T = csvread('0_TMmode_result_T.csv');
-Splitter_R = csvread('0_TMmode_result_R.csv');
+Splitter_T = csvread('1_TMmode_result_T.csv');
+Splitter_R = csvread('1_TMmode_result_R.csv');
 % Transmission polt properties
 T_Linewidth = 2;
 T_color = 'b';

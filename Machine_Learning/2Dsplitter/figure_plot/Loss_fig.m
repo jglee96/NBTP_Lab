@@ -24,6 +24,7 @@ xlim([0 100]);
 ax = gca;
 ax.FontSize = 15;
 ax.FontWeight = 'bold';
+% set(gca, 'YScale', 'log')
 
 figure;
 plot(Training_NN, 'k', 'Linewidth', lw);
@@ -34,6 +35,7 @@ ylabel('Loss', 'Fontsize', fs);
 ax = gca;
 ax.FontSize = 15;
 ax.FontWeight = 'bold';
+% set(gca, 'YScale', 'log')
 
 %% ResNet loss plot
 figure;

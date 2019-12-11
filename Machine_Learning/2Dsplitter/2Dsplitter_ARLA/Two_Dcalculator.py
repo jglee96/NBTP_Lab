@@ -13,6 +13,7 @@ def band_reward(R, tarwave, wavelength, bandwidth):
     # return  R_in * (1 - R_out)
     return R_in / R_out
 
+
 def broad_reward(R):
     min_R = []
     for i in range(R.shape[0]):

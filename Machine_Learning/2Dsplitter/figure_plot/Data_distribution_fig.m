@@ -2,7 +2,7 @@ clear;
 close all;
 
 %%
-Data_dist = csvread('Data_distribution(07_min).csv');
+Data_dist = csvread('Data_distribution(06_min).csv');
 xr = Data_dist(1, :);
 Treward = Data_dist(2, :);
 

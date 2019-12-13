@@ -3,8 +3,10 @@ close all;
 
 c = 299792458;
 %% Splitter %%
-Splitter_T = csvread('1_TMmode_result_T.csv');
-Splitter_R = csvread('1_TMmode_result_R.csv');
+% Splitter_T = csvread('1_TMmode_result_T.csv');
+% Splitter_R = csvread('1_TMmode_result_R.csv');
+Splitter_T = csvread('rewardsample_T.csv');
+Splitter_R = csvread('rewardsample_R.csv');
 % Transmission polt properties
 T_Linewidth = 2;
 T_color = 'b';
@@ -19,8 +21,8 @@ tick_Fontsize = 15;
 % linear
 figure(1);
 plot(Splitter_T(:,1)*10^6, Splitter_T(:,2), T_color, 'Linewidth', T_Linewidth);
-hold on;
-plot(Splitter_R(:,1)*10^6, Splitter_R(:,2), R_color, 'Linewidth', R_Linewidth);
+% hold on;
+% plot(Splitter_R(:,1)*10^6, Splitter_R(:,2), R_color, 'Linewidth', R_Linewidth);
 xlabel('Wavelength [um]', 'Fontsize', label_Fontsize);
 ylabel('Transmission', 'Fontsize', label_Fontsize);
 xlim([275 325]);

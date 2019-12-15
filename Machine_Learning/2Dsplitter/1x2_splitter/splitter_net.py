@@ -11,8 +11,8 @@ INPUT_SIZE = N_pixel * int(N_pixel/2)
 OUTPUT_SIZE = 26
 
 PATH = 'D:/NBTP_Lab/Machine_Learning/2Dsplitter/1x2_splitter'
-TRAIN_PATH = PATH + '/trainset/06'
-Nfile = 12
+TRAIN_PATH = PATH + '/trainset/08'
+Nfile = 16
 
 
 def binaryRound(x):
@@ -159,6 +159,7 @@ def main(
     # Load training data
     sX, _, P2 = getData(mode='unpack')
     Nsample = sX.shape[0]
+    print(Nsample)
 
     Nr = 0.9
     Nlearning = int(Nr*Nsample)
@@ -217,7 +218,7 @@ def main(
             train_loss.append(temp)
 
         # Save
-        FCDNN_save_weights(weights, biases, output_folder, weight_name_save, num_layers)
+        # FCDNN_save_weights(weights, biases, output_folder, weight_name_save, num_layers)
 
         # Test
         test_loss = []
@@ -261,10 +262,10 @@ def main(
         plt.scatter(cc_x, cc_y)
         corr = corr_coef(cc_x, cc_y)
         print(corr)
-        with open(PATH + '/Corr(NN).csv', 'w') as lossfile:
-            np.savetxt(lossfile, np.reshape(cc_x, [1, len(cc_x)]), delimiter=',', fmt='%.5f')
-        with open(PATH + '/Corr(NN).csv', 'a') as lossfile:
-            np.savetxt(lossfile, np.reshape(cc_y, [1, len(cc_y)]), delimiter=',', fmt='%.5f')
+        # with open(PATH + '/Corr(NN).csv', 'w') as lossfile:
+        #     np.savetxt(lossfile, np.reshape(cc_x, [1, len(cc_x)]), delimiter=',', fmt='%.5f')
+        # with open(PATH + '/Corr(NN).csv', 'a') as lossfile:
+        #     np.savetxt(lossfile, np.reshape(cc_y, [1, len(cc_y)]), delimiter=',', fmt='%.5f')
 
         test_loss_mean = sum(test_loss) / len(test_loss)
         print(test_loss_mean)

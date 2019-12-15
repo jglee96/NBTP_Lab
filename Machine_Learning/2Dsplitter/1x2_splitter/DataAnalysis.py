@@ -2,8 +2,8 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-TRAIN_PATH = 'D:/NBTP_Lab/Machine_Learning/2Dsplitter/1x2_splitter/trainset/07'
-Nfile = 12
+TRAIN_PATH = 'D:/NBTP_Lab/Machine_Learning/2Dsplitter/1x2_splitter/trainset/08'
+Nfile = 16
 
 
 
@@ -90,7 +90,7 @@ def Tstatic(pav, Nsample):
 
 
 def main():
-    _, T, Nsample = getData(mode='pack')
+    _, T, Nsample = getData(mode='unpack')
 
     Tmin = np.min(T, axis=1)
     Tmean = np.mean(T, axis=1)

@@ -11,8 +11,8 @@ INPUT_SIZE = N_pixel * int(N_pixel/2)
 OUTPUT_SIZE = 26
 
 PATH = 'D:/NBTP_Lab/Machine_Learning/2Dsplitter/1x2_splitter'
-TRAIN_PATH = PATH + '/trainset/06'
-Nfile = 12
+TRAIN_PATH = PATH + '/trainset/08'
+Nfile = 16
 
 
 def getData(mode):

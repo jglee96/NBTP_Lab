@@ -2,8 +2,8 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-TRAIN_PATH = 'D:/NBTP_Lab/Machine_Learning/2Dsplitter/1x2_splitter/trainset/08'
-Nfile = 16
+TRAIN_PATH = 'D:/NBTP_Lab/Machine_Learning/2Dsplitter/1x2_splitter/trainset/06'
+Nfile = 12
 
 
 
@@ -105,16 +105,21 @@ def main():
     plt.bar(x, Tmin_bar)
     plt.xticks(x, Tvalues)
 
-    with open(TRAIN_PATH + '/Data_distribution(min).csv', "a") as sf:
-        np.savetxt(sf, np.reshape(np.arange(0.05, 0.55, 0.05), (1, len(Tvalues))), fmt='%.2f', delimiter=',')
-    with open(TRAIN_PATH + '/Data_distribution(min).csv', "a") as sf:
-        np.savetxt(sf, np.reshape(Tmin_bar, (1, len(Tmin_bar))), fmt='%d', delimiter=',')
+    # with open(TRAIN_PATH + '/Data_distribution(min).csv', "a") as sf:
+    #     np.savetxt(sf, np.reshape(np.arange(0.05, 0.55, 0.05), (1, len(Tvalues))), fmt='%.2f', delimiter=',')
+    # with open(TRAIN_PATH + '/Data_distribution(min).csv', "a") as sf:
+    #     np.savetxt(sf, np.reshape(Tmin_bar, (1, len(Tmin_bar))), fmt='%d', delimiter=',')
 
     plt.figure(2)
     x = np.arange(10)
     Tvalues = ['0.05', '0.1', '0.15', '0.2', '0.25', '0.3', '0.35', '0.4', '0.45', '0.5']
     plt.bar(x, Tmean_bar)
     plt.xticks(x, Tvalues)
+
+    with open(TRAIN_PATH + '/Data_distribution(avg).csv', "a") as sf:
+        np.savetxt(sf, np.reshape(np.arange(0.05, 0.55, 0.05), (1, len(Tvalues))), fmt='%.2f', delimiter=',')
+    with open(TRAIN_PATH + '/Data_distribution(avg).csv', "a") as sf:
+        np.savetxt(sf, np.reshape(Tmean_bar, (1, len(Tmin_bar))), fmt='%d', delimiter=',')
 
     plt.show()
 

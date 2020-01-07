@@ -311,5 +311,5 @@ if __name__=="__main__":
             'n_hidden': int(dict['n_hidden'])
         }
 
-    main(**kwargs)
-    # Ratio_Optimization(**kwargs)
+    # main(**kwargs)
+    Ratio_Optimization(**kwargs)

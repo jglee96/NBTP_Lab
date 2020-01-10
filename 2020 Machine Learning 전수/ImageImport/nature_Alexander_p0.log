@@ -1,0 +1,16 @@
+Lumerical 2020a FDTD Solver Version 8.23.2152 (Windows 64bit)
+ expires (month/day/year): 10/31/2020
+using config file: C:/Users/NBTP/AppData/Roaming/Lumerical/License.ini
+license host: 141.223.166.50
+current time: Thu Jan  9 22:17:10 2020
+Running on host: DESKTOP-MQQIKS2
+All processes are communicating and ready to proceed to simulation...
+Running fsp file: C:\Program Files\Lumerical\2020a\bin\fdtd-engine-msmpi.exe -t 1 -remote D:/ImageImport/nature_Alexander.fsp
+number of processors is 4
+processors are distributed as: 2x2x1
+Running 3D Simulation
+Starting meshing
+Simulation size in gridpoints: 287 x 219 x 110
+Refined 0 mesh cells (0%)
+Completed meshing!
+Meshing complete in 7.64063 seconds of CPU time

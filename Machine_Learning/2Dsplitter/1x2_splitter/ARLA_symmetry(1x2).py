@@ -9,7 +9,7 @@ print("======== Design Information ========")
 print('nh: Si, nl: Air')
 
 PATH = 'D:/NBTP_Lab/Machine_Learning/2Dsplitter/1x2_splitter'
-TRAIN_PATH = PATH + '/trainset/07'
+TRAIN_PATH = PATH + '/trainset/07' # Thesis ARL traindata: 07
 Nfile = 101
 
 

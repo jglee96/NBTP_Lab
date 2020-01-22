@@ -1,0 +1,44 @@
+deleteall;
+
+# add fdtd simulation region
+addfdtd;
+set("dimension", "2D");
+set("x", 0);
+set("x span", 1e-6);
+set("y", 0);
+set("y span", 6e-6);
+set("z", 0);
+set("x min bc", "periodic");
+set("mesh type", "custom non-uniform");
+set("mesh cells per wavelength", 20);
+set("pml layers", 20);
+
+# add plane wave source
+addplane;
+set("injection axis", "y-axis");
+set("direction", "Forward");
+set("x", 0);
+set("x span", 2e-6);
+set("y", -2e-6);
+set("z", 0);
+set("z span", 2e-6);
+set("wavelength start", 0.4e-6);
+set("wavelength stop", 0.7e-6);
+
+# add monitor
+addpower;
+set("monitor type", "Linear X");
+set("x", 0);
+set("x span", 1e-6);
+set("y", 1e-6);
+set("z", 0);
+# set frequency points
+setglobalmonitor("frequency points", 100);
+
+# add structure
+addrect;
+set("x", 0);
+set("x span", 1e-6);
+set("y", 0);
+set("y span", 0.3e-6);
+set("index", 2);

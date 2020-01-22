@@ -1,0 +1,65 @@
+if( layoutmode ==0 ){
+switchtolayout;
+}
+
+# pml convergence test
+num_pml_roof = 2;
+num_labda = getnamed("monitor", "frequency points");
+all_pml_T = matrix(num_labda, num_pml_roof);
+
+for (i=1:num_pml_roof) {
+    pml_layer = 9+i;
+    
+    setnamed("FDTD", "pml layers", pml_layer);
+    
+    run;    
+    trans = getresult("monitor", "T");
+
+    all_pml_T(:,i) = trans.T;
+
+    #freq = trans.f;
+    #lambda = c/freq;
+    lambda = trans.lambda;
+    
+   
+    switchtolayout;   
+}
+
+format long;
+write("convergence_lambda.txt", num2str(lambda));
+write("convergence_pml.txt", num2str(all_pml_T));
+
+
+# mesh convergence test
+num_mesh_roof = 2;
+setnamed("FDTD", "pml layers", 20);
+all_mesh_T = matrix(num_labda, num_mesh_roof);
+
+for (i=1:num_mesh_roof){
+    mesh_num = 4+i;
+     
+    setnamed("FDTD", "mesh cells per wavelength", mesh_num);
+
+    run;
+    trans = getresult("monitor", "T");
+    
+    all_mesh_T(:,i) = trans.T;
+    switchtolayout;     
+}
+
+format long;
+write("convergence_mesh.txt", num2str(all_mesh_T));
+
+#m = "monitor";
+
+#T1 = getresult(m, "T");
+#freq = getdata(m,"f");
+
+#lambda = c/freq;
+
+#x = T1.T;
+
+#plot(lambda, x);
+
+
+#switchtolayout;

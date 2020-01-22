@@ -1,0 +1,31 @@
+# add a new optimization and set basic properties
+addsweep(1);
+setsweep("optimization", "name", "optimization_script");
+setsweep("optimization_script", "Type", "Maximize");
+setsweep("optimization_script", "algorithm", "Particle Swarm");
+setsweep("optimization_script", "maximum generations", 20);
+setsweep("optimization_script", "generation size", 20);
+setsweep("optimization_script", "tolerance", 0);
+
+mirror_periods = 5; #< Number of mirror periods in each Bragg stack
+
+for(i=0;i<mirror_periods;i=i+1){
+        # define the parameter index
+        unit_name = "::model::stack_left::t" + num2str(i);
+        para = struct;
+        para.Parameter = unit_name;
+        para.Type = "Length";
+        para.Min = 0e-6;
+        para.Max = 0.375e-6;
+        # add the parameter index to the optimization
+        addsweepparameter("optimization_script", para);
+}
+# define figure of merit
+result = struct;
+result.Name = "reward";
+result.Result = "::model::reward";
+result.Optimize = true; 
+
+
+# add the figure of merits R & T to the optimization
+addsweepresult("optimization_script", result);
